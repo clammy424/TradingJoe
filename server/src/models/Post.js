@@ -1,21 +1,7 @@
 const mongoose = require('mongoose');
 
-
-// - id
-// - creatorId
-// - title
-// - description
-// - category
-// - customCategory
-// - requests[]
-// - deadline
-// - maxMatches
-// - status
-// - createdAt
-// - updatedAt
-
 const postSchema = new mongoose.Schema({
-    creatorID: {
+    creatorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -28,8 +14,13 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    requests: [{type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
-    offers: [{type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
+    requests: {type: mongoose.Schema.Types.ObjectId,
+        ref: 'Response',
+        required: true},
+    offers: {type: mongoose.Schema.Types.ObjectId,
+        ref: 'Response',
+        required: true
+    },
     deadline: {
         type: Date,
         required: false
@@ -42,18 +33,8 @@ const postSchema = new mongoose.Schema({
         type: String,
         enum: ['open', 'closed', 'cancelled'],
         default: 'open'
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-        required: true
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-        required: true
     }
-});
+}, { timestamps: true });
 
 // 2. Create the model and export it
 // 'Post' will automatically map to a plural collection named 'posts' in MongoDB

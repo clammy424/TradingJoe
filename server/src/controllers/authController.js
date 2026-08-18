@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const signup = async (req, res) => {
@@ -91,8 +92,21 @@ const login = async (req, res) => {
         });
     }
 
+    if (!process.env.JWT_SECRET) {
+        return res.status(500).json({
+            message: "JWT secret is not configured",
+        });
+    }
+
+    const token = jwt.sign(
+        { userID: existingEmail._id.toString() },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+
     return res.status(200).json({
         message: "Login successful",
+        token,
         user: {
             id: existingEmail._id,
             email: existingEmail.email,
@@ -112,7 +126,14 @@ const login = async (req, res) => {
   }
 }; 
 
+const logout = async (req, res) => {
+  return res.status(200).json({
+    message: "Logout successful",
+  });
+};
+
 module.exports = {
   signup,
-  login
+  login,
+  logout
 };
