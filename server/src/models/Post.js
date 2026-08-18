@@ -1,46 +1,62 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-    id: {
-        type: ObjectId,
-        required: true,
-        unique: true
+
+// - id
+// - creatorId
+// - title
+// - description
+// - category
+// - customCategory
+// - requests[]
+// - deadline
+// - maxMatches
+// - status
+// - createdAt
+// - updatedAt
+
+const postSchema = new mongoose.Schema({
+    creatorID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
+    title: {
         type: String,
         required: true
     },
-    name: {
+    description: {
         type: String,
-        required: true
+        required: false
     },
-    role: {
-        type: String,
-        enum: ['undergrad', 'grad', 'professor', 'staff'],
-        default: 'user'
+    requests: [{type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
+    offers: [{type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
+    deadline: {
+        type: Date,
+        required: false
     },
-    graduationYear: {
+    maxMatches: {
         type: Number,
         required: false
+    },
+    status: {
+        type: String,
+        enum: ['open', 'closed', 'cancelled'],
+        default: 'open'
     },
     createdAt: {
         type: Date,
         default: Date.now,
         required: true
     },
-    profilePicture: {
-        type: String,
-        default: null
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+        required: true
     }
 });
 
 // 2. Create the model and export it
-// 'User' will automatically map to a plural collection named 'users' in MongoDB
-const User = mongoose.model('User', userSchema);
+// 'Post' will automatically map to a plural collection named 'posts' in MongoDB
+const Post = mongoose.model('Post', postSchema);
 
-module.exports = User;
+module.exports = Post;
