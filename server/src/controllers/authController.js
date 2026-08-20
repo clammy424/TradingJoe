@@ -127,6 +127,7 @@ const login = async (req, res) => {
 }; 
 
 const logout = async (req, res) => {
+  console.log("Logout route hit");
   return res.status(200).json({
     message: "Logout successful",
   });

@@ -25,26 +25,12 @@ const responseSchema = new mongoose.Schema({
         enum: ['food', 'education', 'items', 'transportation', 'services', 'other'],
         required: true
     },
-    customCategory: {
-        type: String,
-        required: false
-    },
     status: {
         type: String,
         enum: ['pending', 'accepted', 'rejected'],
         default: 'pending'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-        required: true
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-        required: true
-    }
-});
+}, {timestamps: true});
 
 // 2. Create the model and export it
 // 'Request' will automatically map to a plural collection named 'requests' in MongoDB

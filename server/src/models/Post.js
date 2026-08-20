@@ -12,13 +12,6 @@ const postSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: false
-    },
-    requests: {type: mongoose.Schema.Types.ObjectId,
-        ref: 'Response',
-        required: true},
-    offers: {type: mongoose.Schema.Types.ObjectId,
-        ref: 'Response',
         required: true
     },
     deadline: {
@@ -27,7 +20,8 @@ const postSchema = new mongoose.Schema({
     },
     maxMatches: {
         type: Number,
-        required: false
+        required: false, 
+        default: 1
     },
     status: {
         type: String,
