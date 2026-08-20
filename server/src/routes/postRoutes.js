@@ -1,6 +1,7 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
-const { createPost, getPosts, getPostById } = require("../controllers/postController");
+const { createPost, getPosts, getPostById, updatePost } = require("../controllers/postController");
+const { createBarter } = require("../controllers/barterController");
 
 const router = express.Router();
 
@@ -17,5 +18,9 @@ router.get(
 );
 
 router.get("/:postId", authMiddleware, getPostById);
+
+router.put("/:postId", authMiddleware, updatePost);
+
+router.post("/:postId/responses/:responseId/barters", authMiddleware, createBarter);
 
 module.exports = router;
