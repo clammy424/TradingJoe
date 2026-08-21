@@ -460,11 +460,130 @@ const updatePost = async (req, res) => {
   }
 };
 
+const cancelPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found"
+      });
+    }
+
+    if (post.creatorId.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Forbidden"
+      });
+    }
+
+    if (post.status === "cancelled") {
+      return res.status(400).json({
+        message: "Post is already cancelled"
+      });
+    }
+
+    if (post.status === "closed") {
+      return res.status(400).json({
+        message: "Closed posts cannot be cancelled"
+      });
+    }
+
+    post.status = "cancelled";
+    await post.save();
+
+    res.status(200).json({
+      message: "Post cancelled successfully",
+      post,
+    });
+
+  } catch (error) {
+    console.error("CANCEL POST ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to cancel post"
+    });
+  }
+};
+
+const uncancelPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found"
+      });
+    }
+
+    if (post.creatorId.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Forbidden"
+      });
+    }
+
+    if (post.status !== "cancelled") {
+      return res.status(400).json({
+        message: "Only cancelled posts can be uncancelled"
+      });
+    }
+
+    if (post.deadline && post.deadline < new Date()) {
+      return res.status(400).json({
+        message: "Post deadline has already passed"
+      });
+    }
+
+    const acceptedCount = await Barter.countDocuments({
+      postId: post._id,
+      status: "accepted"
+    });
+
+    if (acceptedCount >= (post.maxMatches ?? 1)) {
+      return res.status(400).json({
+        message: "Post has already reached its maximum matches"
+      });
+    }
+
+    post.status = "open";
+    await post.save();
+
+    res.status(200).json({
+      message: "Post uncancelled successfully",
+      post,
+    });
+
+  } catch (error) {
+    console.error("UNCANCEL POST ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to uncancel post"
+    });
+  }
+};
+
 module.exports = {
   createPost,
   getPosts,
   getPostsByUser,
   getEngagedPosts,
   getPostById,
-  updatePost
+  updatePost,
+  cancelPost,
+  uncancelPost
 };

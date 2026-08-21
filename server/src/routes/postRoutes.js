@@ -1,6 +1,6 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
-const { createPost, getPosts, getEngagedPosts, getPostById, updatePost } = require("../controllers/postController");
+const { createPost, getPosts, getEngagedPosts, getPostById, updatePost, cancelPost, uncancelPost } = require("../controllers/postController");
 const { createBarter, getMyBartersForPost } = require("../controllers/barterController");
 
 const router = express.Router();
@@ -22,6 +22,10 @@ router.get("/engaged", authMiddleware, getEngagedPosts);
 router.get("/:postId", authMiddleware, getPostById);
 
 router.put("/:postId", authMiddleware, updatePost);
+
+router.put("/:postId/cancel", authMiddleware, cancelPost);
+
+router.put("/:postId/uncancel", authMiddleware, uncancelPost);
 
 router.post("/:postId/barters", authMiddleware, createBarter);
 
