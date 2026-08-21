@@ -278,3 +278,39 @@ export const rejectBarter = async (barterId) => {
 
   return data;
 };
+
+export const getUserProfile = async (userId) => {
+  const token = await getToken();
+
+  const response = await fetch(`${API_URL}/api/users/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to fetch user");
+  }
+
+  return data;
+};
+
+export const getUserPosts = async (userId) => {
+  const token = await getToken();
+
+  const response = await fetch(`${API_URL}/api/users/${userId}/posts`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to fetch user posts");
+  }
+
+  return data;
+};
