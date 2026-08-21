@@ -59,7 +59,7 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#7c3aed" />
       </View>
     );
   }
@@ -67,7 +67,7 @@ export default function Profile() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text>{error}</Text>
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -92,22 +92,33 @@ export default function Profile() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
         {Boolean(profile.username) && (
-          <Text style={styles.username}>@{profile.username}</Text>
+          <Text
+            style={styles.username}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            @{profile.username}
+          </Text>
         )}
 
         {Boolean(profile.name) && (
-          <Text style={styles.name}>{profile.name}</Text>
+          <Text
+            style={styles.name}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {profile.name}
+          </Text>
         )}
 
         {Boolean(metaText) && (
           <Text style={styles.meta}>{metaText}</Text>
         )}
       </View>
-
-      <Text style={styles.postsHeading}>Posts</Text>
 
       <View style={styles.tabRow}>
         {visibleTabs.map(({ status, label }) => (
@@ -121,6 +132,7 @@ export default function Profile() {
                 styles.tabText,
                 effectiveStatus === status && styles.tabTextActive,
               ]}
+              numberOfLines={1}
             >
               {label}
             </Text>
@@ -128,33 +140,38 @@ export default function Profile() {
         ))}
       </View>
 
-      {(() => {
-        const activeLabel = STATUS_TABS.find(
-          (tab) => tab.status === effectiveStatus
-        ).label;
+      <View style={styles.postsContainer}>
+        {(() => {
+          const activeLabel = STATUS_TABS.find(
+            (tab) => tab.status === effectiveStatus
+          ).label;
 
-        const activePosts = posts.filter(
-          (post) =>
-            post.status === effectiveStatus &&
-            (isOwnProfile || post.status !== "cancelled")
-        );
-
-        if (activePosts.length === 0) {
-          return (
-            <Text style={styles.emptyText}>
-              No {activeLabel.toLowerCase()} posts.
-            </Text>
+          const activePosts = posts.filter(
+            (post) =>
+              post.status === effectiveStatus &&
+              (isOwnProfile || post.status !== "cancelled")
           );
-        }
 
-        return activePosts.map((post) => (
-          <PostCard
-            key={post._id}
-            post={post}
-            onPress={() => router.push(`/post/${post._id}`)}
-          />
-        ));
-      })()}
+          if (activePosts.length === 0) {
+            return (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  No {activeLabel.toLowerCase()} posts yet.
+                </Text>
+              </View>
+            );
+          }
+
+          return activePosts.map((post) => (
+            <PostCard
+              key={post._id}
+              post={post}
+              style={styles.postCardShadow}
+              onPress={() => router.push(`/post/${post._id}`)}
+            />
+          ));
+        })()}
+      </View>
     </ScrollView>
   );
 }
@@ -162,45 +179,64 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: "#fff",
   },
 
   listContent: {
-    paddingBottom: 30,
-  },
-
-  header: {
-    marginBottom: 8,
+    padding: 16,
+    paddingBottom: 40,
+    flexGrow: 1,
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 24,
   },
 
-  postsHeading: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 8,
+  header: {
+    marginBottom: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    paddingBottom: 6,
+    borderBottomColor: "#eee",
+  },
+
+  username: {
+    fontSize: 24,
+    fontWeight: "bold",
+    letterSpacing: 0.2,
+  },
+
+  name: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 4,
+  },
+
+  meta: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#777",
+    marginTop: 6,
   },
 
   tabRow: {
     flexDirection: "row",
-    marginBottom: 12,
-    gap: 8,
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 20,
+    gap: 4,
   },
 
   tab: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#7c3aed",
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   tabActive: {
@@ -210,32 +246,39 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#7c3aed",
+    color: "#555",
   },
 
   tabTextActive: {
     color: "#fff",
   },
 
+  postsContainer: {
+    flex: 1,
+  },
+
+  postCardShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+
   emptyText: {
-    fontSize: 13,
-    color: "#777",
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
   },
 
-  username: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-
-  name: {
-    fontSize: 16,
-    marginTop: 4,
-  },
-
-  meta: {
-    fontSize: 13,
-    fontStyle: "italic",
-    color: "#777",
-    marginTop: 4,
+  errorText: {
+    fontSize: 14,
+    color: "#dc2626",
+    textAlign: "center",
   },
 });

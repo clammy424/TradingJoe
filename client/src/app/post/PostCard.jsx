@@ -5,10 +5,10 @@ import {
   StyleSheet
 } from "react-native";
 
-export default function PostCard({ post, onPress }) {
+export default function PostCard({ post, onPress, style }) {
   return (
     <Pressable
-      style={styles.card}
+      style={[styles.card, style]}
       onPress={onPress}
     >
 
