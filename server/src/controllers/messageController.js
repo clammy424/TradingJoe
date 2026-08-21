@@ -67,6 +67,55 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const getMessages = async (req, res) => {
+  try {
+    const { barterId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized"
+      });
+    }
+
+    const barter = await Barter.findById(barterId);
+
+    if (!barter) {
+      return res.status(404).json({
+        message: "Barter not found"
+      });
+    }
+
+    const post = await Post.findById(barter.postId);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found"
+      });
+    }
+
+    const barterCreatorId = barter.creatorId.toString();
+    const postCreatorId = post.creatorId.toString();
+
+    if (req.user.id !== barterCreatorId && req.user.id !== postCreatorId) {
+      return res.status(403).json({
+        message: "Forbidden"
+      });
+    }
+
+    const messages = await Message.find({ barterId }).sort({ createdAt: 1 });
+
+    return res.status(200).json(messages);
+
+  } catch (error) {
+    console.error("GET MESSAGES ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch messages"
+    });
+  }
+};
+
 module.exports = {
-  sendMessage
+  sendMessage,
+  getMessages
 };

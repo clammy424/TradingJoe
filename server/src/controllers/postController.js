@@ -83,9 +83,58 @@ const getPosts = async (req, res) => {
       status: "open"
     })
       .populate("creatorId", "username")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json(posts);
+    const postIds = posts.map((post) => post._id);
+
+    const responseCounts = await Response.aggregate([
+      { $match: { postId: { $in: postIds } } },
+      { $group: { _id: { postId: "$postId", type: "$type" }, count: { $sum: 1 } } }
+    ]);
+
+    const barterCounts = await Barter.aggregate([
+      { $match: { postId: { $in: postIds } } },
+      { $group: { _id: { postId: "$postId", status: "$status" }, count: { $sum: 1 } } }
+    ]);
+
+    const countsByPostId = new Map();
+
+    const getCounts = (postId) => {
+      const key = postId.toString();
+
+      if (!countsByPostId.has(key)) {
+        countsByPostId.set(key, {
+          requestCount: 0,
+          offerCount: 0,
+          activeBarterCount: 0,
+          acceptedBarterCount: 0
+        });
+      }
+
+      return countsByPostId.get(key);
+    };
+
+    for (const { _id, count } of responseCounts) {
+      const counts = getCounts(_id.postId);
+
+      if (_id.type === "request") counts.requestCount = count;
+      if (_id.type === "offer") counts.offerCount = count;
+    }
+
+    for (const { _id, count } of barterCounts) {
+      const counts = getCounts(_id.postId);
+
+      if (_id.status !== "rejected") counts.activeBarterCount += count;
+      if (_id.status === "accepted") counts.acceptedBarterCount = count;
+    }
+
+    const postsWithCounts = posts.map((post) => ({
+      ...post,
+      ...getCounts(post._id)
+    }));
+
+    res.status(200).json(postsWithCounts);
 
   } catch (error) {
     console.error("GET POSTS ERROR:", error);

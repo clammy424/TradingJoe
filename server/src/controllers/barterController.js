@@ -191,14 +191,6 @@ const acceptBarter = async (req, res) => {
     //   await response.save();
     // }
 
-    await Barter.updateMany(
-      {
-        status: "pending",
-        _id: { $ne: barter._id }
-      },
-      { status: "rejected" }
-    );
-
     const newAcceptedCount = await Barter.countDocuments({
       postId: post._id,
       status: "accepted"
