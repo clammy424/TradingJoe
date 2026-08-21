@@ -68,7 +68,7 @@ const createBarter = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: "Barter proposal created successfully",
+      message: "Barter created successfully",
       barter
     });
 

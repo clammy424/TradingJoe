@@ -22,7 +22,7 @@ const responseSchema = new mongoose.Schema({
     },
     category: {
         type: String, 
-        enum: ['food', 'education', 'items', 'transportation', 'services', 'other'],
+        enum: ['food', 'education', 'items', 'transportation', 'services', 'leisure','other'],
         required: true
     },
     status: {

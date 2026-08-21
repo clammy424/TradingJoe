@@ -20,11 +20,6 @@ const barterSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    parentOfferId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Response',
-        required: false
-    },
     message: {
         type: String,
         required: true
