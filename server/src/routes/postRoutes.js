@@ -21,6 +21,6 @@ router.get("/:postId", authMiddleware, getPostById);
 
 router.put("/:postId", authMiddleware, updatePost);
 
-router.post("/:postId/responses/:responseId/barters", authMiddleware, createBarter);
+router.post("/:postId/barters", authMiddleware, createBarter);
 
 module.exports = router;

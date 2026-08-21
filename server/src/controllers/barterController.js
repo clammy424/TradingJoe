@@ -1,10 +1,9 @@
 const Post = require('../models/Post');
-const Response = require('../models/Response');
 const Barter = require('../models/Barter');
 
 const createBarter = async (req, res) => {
   try {
-    const { postId, responseId } = req.params;
+    const { postId } = req.params;
     const { message } = req.body;
 
     if (!req.user || !req.user.id) {
@@ -30,26 +29,6 @@ const createBarter = async (req, res) => {
     if (post.creatorId.toString() === req.user.id) {
       return res.status(403).json({
         message: "Post creator cannot propose a barter on their own post"
-      });
-    }
-
-    const response = await Response.findById(responseId);
-
-    console.log("BARTER DEBUG");
-    console.log("postId:", postId);
-    console.log("responseId:", responseId);
-    console.log("response:", response);
-    console.log("response.postId:", response?.postId?.toString());
-
-    if (!response || response.postId.toString() !== postId) {
-      return res.status(404).json({
-        message: "Response not found"
-      });
-    }
-
-    if (response.status !== "pending") {
-      return res.status(400).json({
-        message: "Response is not pending"
       });
     }
 
@@ -207,10 +186,10 @@ const acceptBarter = async (req, res) => {
     barter.status = "accepted";
     await barter.save();
 
-    if (response) {
-      response.status = "accepted";
-      await response.save();
-    }
+    // if (response) {
+    //   response.status = "accepted";
+    //   await response.save();
+    // }
 
     await Barter.updateMany(
       {
