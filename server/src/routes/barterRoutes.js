@@ -1,9 +1,11 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
-const { rejectBarter, acceptBarter } = require("../controllers/barterController");
+const { rejectBarter, acceptBarter, getMyBarters } = require("../controllers/barterController");
 const { getMessages, sendMessage } = require("../controllers/messageController");
 
 const router = express.Router();
+
+router.get("/mine", authMiddleware, getMyBarters);
 
 router.patch("/:barterId/reject", authMiddleware, rejectBarter);
 

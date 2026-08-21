@@ -59,6 +59,57 @@ const createBarter = async (req, res) => {
   }
 };
 
+const getMyBarters = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized"
+      });
+    }
+
+    const barters = await Barter.find({ creatorId: req.user.id })
+      .populate({
+        path: "postId",
+        select: "title description status maxMatches creatorId",
+        populate: { path: "creatorId", select: "username" }
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(barters);
+
+  } catch (error) {
+    console.error("GET MY BARTERS ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch barters"
+    });
+  }
+};
+
+const getMyBartersForPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized"
+      });
+    }
+
+    const barters = await Barter.find({ postId, creatorId: req.user.id })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(barters);
+
+  } catch (error) {
+    console.error("GET MY BARTERS FOR POST ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch barters"
+    });
+  }
+};
+
 const rejectBarter = async (req, res) => {
   try {
     const { barterId } = req.params;
@@ -217,6 +268,8 @@ const acceptBarter = async (req, res) => {
 
 module.exports = {
   createBarter,
+  getMyBarters,
+  getMyBartersForPost,
   rejectBarter,
   acceptBarter
 };
