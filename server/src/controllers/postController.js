@@ -81,7 +81,9 @@ const getPosts = async (req, res) => {
   try {
     const posts = await Post.find({
       status: "open"
-    }).sort({ createdAt: -1 });
+    })
+      .populate("creatorId", "username")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
 
@@ -98,7 +100,7 @@ const getPostById = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("creatorId", "username");
 
     if (!post) {
       return res.status(404).json({
@@ -111,7 +113,7 @@ const getPostById = async (req, res) => {
     const requests = responses.filter((response) => response.type === "request");
     const offers = responses.filter((response) => response.type === "offer");
 
-    const barters = await Barter.find({ postId });
+    const barters = await Barter.find({ postId }).populate("creatorId", "username");
 
     res.status(200).json({
       post,

@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+const USERNAME_REGEX = /^[^\sA-Z]+$/;
+
 const signup = async (req, res) => {
   try {
     const {
@@ -9,23 +11,38 @@ const signup = async (req, res) => {
       password,
       verifyPassword,
       name,
+      username,
       role,
       gradYear,
     } = req.body;
 
     // 1. Check required fields
-    if (!email || !password || !verifyPassword || !name || !role) {
+    if (!email || !password || !verifyPassword || !name || !username || !role) {
       return res.status(400).json({
         message: "Missing required fields",
       });
     }
 
-    // 2. Check if email already exists and password matches verification
+    if (!USERNAME_REGEX.test(username)) {
+      return res.status(400).json({
+        message: "Username must be lowercase with no spaces",
+      });
+    }
+
+    // 2. Check if email or username already exists and password matches verification
     const existingEmail = await User.findOne({ email });
 
     if (existingEmail) {
       return res.status(409).json({
         message: "Email already in use",
+      });
+    }
+
+    const existingUsername = await User.findOne({ username });
+
+    if (existingUsername) {
+      return res.status(409).json({
+        message: "Username already in use",
       });
     }
 
@@ -43,6 +60,7 @@ const signup = async (req, res) => {
       email,
       password: hashedPassword,
       name,
+      username,
       role,
       gradYear
     });
@@ -54,6 +72,7 @@ const signup = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        username: user.username,
         role: user.role,
         gradYear: user.gradYear,
         profilePicture: user.profilePicture,
