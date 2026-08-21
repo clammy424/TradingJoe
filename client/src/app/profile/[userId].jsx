@@ -1,11 +1,11 @@
-import { View, Text, ActivityIndicator, StyleSheet, ScrollView } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useCallback, useState } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getUserProfile, getUserPosts } from "../../services/api";
 import PostCard from "../post/PostCard";
 
-const STATUS_SECTIONS = [
+const STATUS_TABS = [
   { status: "open", label: "Open" },
   { status: "closed", label: "Closed" },
   { status: "cancelled", label: "Cancelled" },
@@ -20,6 +20,7 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeStatus, setActiveStatus] = useState("open");
 
   const isValidUserId = Boolean(userId) && userId !== "undefined" && userId !== "null";
 
@@ -95,29 +96,50 @@ export default function Profile() {
 
       <Text style={styles.postsHeading}>Posts</Text>
 
-      {STATUS_SECTIONS.map(({ status, label }) => {
-        const sectionPosts = posts.filter((post) => post.status === status);
+      <View style={styles.tabRow}>
+        {STATUS_TABS.map(({ status, label }) => (
+          <Pressable
+            key={status}
+            style={[styles.tab, activeStatus === status && styles.tabActive]}
+            onPress={() => setActiveStatus(status)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeStatus === status && styles.tabTextActive,
+              ]}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
-        return (
-          <View key={status} style={styles.section}>
-            <Text style={styles.sectionLabel}>{label}</Text>
+      {(() => {
+        const activeLabel = STATUS_TABS.find(
+          (tab) => tab.status === activeStatus
+        ).label;
 
-            {sectionPosts.length === 0 ? (
-              <Text style={styles.emptyText}>
-                No {label.toLowerCase()} posts.
-              </Text>
-            ) : (
-              sectionPosts.map((post) => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  onPress={() => router.push(`/post/${post._id}`)}
-                />
-              ))
-            )}
-          </View>
+        const activePosts = posts.filter(
+          (post) => post.status === activeStatus
         );
-      })}
+
+        if (activePosts.length === 0) {
+          return (
+            <Text style={styles.emptyText}>
+              No {activeLabel.toLowerCase()} posts.
+            </Text>
+          );
+        }
+
+        return activePosts.map((post) => (
+          <PostCard
+            key={post._id}
+            post={post}
+            onPress={() => router.push(`/post/${post._id}`)}
+          />
+        ));
+      })()}
     </ScrollView>
   );
 }
@@ -152,14 +174,32 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
 
-  section: {
-    marginBottom: 16,
+  tabRow: {
+    flexDirection: "row",
+    marginBottom: 12,
+    gap: 8,
   },
 
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
+  tab: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#7c3aed",
+  },
+
+  tabActive: {
+    backgroundColor: "#7c3aed",
+  },
+
+  tabText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#7c3aed",
+  },
+
+  tabTextActive: {
+    color: "#fff",
   },
 
   emptyText: {
