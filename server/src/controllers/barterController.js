@@ -62,7 +62,6 @@ const createBarter = async (req, res) => {
     const barter = await Barter.create({
       postId,
       creatorId: req.user.id,
-      parentOfferId: responseId,
       message,
       status: "pending"
     });
@@ -208,8 +207,6 @@ const acceptBarter = async (req, res) => {
     barter.status = "accepted";
     await barter.save();
 
-    const response = await Response.findById(barter.parentOfferId);
-
     if (response) {
       response.status = "accepted";
       await response.save();
@@ -217,7 +214,6 @@ const acceptBarter = async (req, res) => {
 
     await Barter.updateMany(
       {
-        parentOfferId: barter.parentOfferId,
         status: "pending",
         _id: { $ne: barter._id }
       },
