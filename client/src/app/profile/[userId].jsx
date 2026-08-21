@@ -2,7 +2,7 @@ import { View, Text, ActivityIndicator, StyleSheet, ScrollView, Pressable } from
 import { useCallback, useState } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
-import { getUserProfile, getUserPosts } from "../../services/api";
+import { getUserProfile, getUserPosts, getEngagedPosts } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
 import PostCard from "../post/PostCard";
 
@@ -12,6 +12,11 @@ const STATUS_TABS = [
   { status: "cancelled", label: "Cancelled" },
 ];
 
+const ENGAGED_STATUS_TABS = [
+  { status: "open", label: "Open" },
+  { status: "closed", label: "Closed" },
+];
+
 export default function Profile() {
   const { userId } = useLocalSearchParams();
 
@@ -19,9 +24,12 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [engagedPosts, setEngagedPosts] = useState({ open: [], closed: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeView, setActiveView] = useState("posts");
   const [activeStatus, setActiveStatus] = useState("open");
+  const [engagedStatus, setEngagedStatus] = useState("open");
   const [currentUserId, setCurrentUserId] = useState(null);
 
   const isValidUserId = Boolean(userId) && userId !== "undefined" && userId !== "null";
@@ -41,6 +49,12 @@ export default function Profile() {
       setProfile(data);
       const userPosts = await getUserPosts(userId);
       setPosts(userPosts);
+
+      if (viewerId && String(viewerId) === String(userId)) {
+        const engaged = await getEngagedPosts();
+        setEngagedPosts(engaged);
+      }
+
       setError(null);
     } catch (error) {
       console.error(error);
@@ -120,58 +134,167 @@ export default function Profile() {
         )}
       </View>
 
-      <View style={styles.tabRow}>
-        {visibleTabs.map(({ status, label }) => (
+      {isOwnProfile && (
+        <View style={styles.viewTabRow}>
           <Pressable
-            key={status}
-            style={[styles.tab, effectiveStatus === status && styles.tabActive]}
-            onPress={() => setActiveStatus(status)}
+            style={[
+              styles.viewTab,
+              activeView === "posts" && styles.viewTabActive,
+            ]}
+            onPress={() => {
+              setActiveView("posts");
+              setActiveStatus("open");
+            }}
           >
             <Text
               style={[
-                styles.tabText,
-                effectiveStatus === status && styles.tabTextActive,
+                styles.viewTabText,
+                activeView === "posts" && styles.viewTabTextActive,
               ]}
-              numberOfLines={1}
             >
-              {label}
+              My Posts
             </Text>
           </Pressable>
-        ))}
-      </View>
 
-      <View style={styles.postsContainer}>
-        {(() => {
-          const activeLabel = STATUS_TABS.find(
-            (tab) => tab.status === effectiveStatus
-          ).label;
+          <Pressable
+            style={[
+              styles.viewTab,
+              activeView === "engaged" && styles.viewTabActive,
+            ]}
+            onPress={() => {
+              setActiveView("engaged");
+              setEngagedStatus("open");
+            }}
+          >
+            <Text
+              style={[
+                styles.viewTabText,
+                activeView === "engaged" && styles.viewTabTextActive,
+              ]}
+            >
+              Engaged Posts
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
-          const activePosts = posts.filter(
-            (post) =>
-              post.status === effectiveStatus &&
-              (isOwnProfile || post.status !== "cancelled")
-          );
+      {activeView === "engaged" && isOwnProfile ? (
+        <>
+          <Text style={styles.viewHeading}>Engaged Posts</Text>
 
-          if (activePosts.length === 0) {
-            return (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  No {activeLabel.toLowerCase()} posts yet.
+          <View style={styles.tabRow}>
+            {ENGAGED_STATUS_TABS.map(({ status, label }) => (
+              <Pressable
+                key={status}
+                style={[
+                  styles.tab,
+                  engagedStatus === status && styles.tabActive,
+                ]}
+                onPress={() => setEngagedStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    engagedStatus === status && styles.tabTextActive,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {label}
                 </Text>
-              </View>
-            );
-          }
+              </Pressable>
+            ))}
+          </View>
 
-          return activePosts.map((post) => (
-            <PostCard
-              key={post._id}
-              post={post}
-              style={styles.postCardShadow}
-              onPress={() => router.push(`/post/${post._id}`)}
-            />
-          ));
-        })()}
-      </View>
+          <View style={styles.postsContainer}>
+            {(() => {
+              const activeLabel = ENGAGED_STATUS_TABS.find(
+                (tab) => tab.status === engagedStatus
+              ).label;
+
+              const activeEngagedPosts = engagedPosts[engagedStatus] || [];
+
+              if (activeEngagedPosts.length === 0) {
+                return (
+                  <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>
+                      No {activeLabel.toLowerCase()} engaged posts yet.
+                    </Text>
+                  </View>
+                );
+              }
+
+              return activeEngagedPosts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  style={styles.postCardShadow}
+                  onPress={() => router.push(`/post/${post._id}`)}
+                />
+              ));
+            })()}
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={styles.viewHeading}>My Posts</Text>
+
+          <View style={styles.tabRow}>
+            {visibleTabs.map(({ status, label }) => (
+              <Pressable
+                key={status}
+                style={[
+                  styles.tab,
+                  effectiveStatus === status && styles.tabActive,
+                ]}
+                onPress={() => setActiveStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    effectiveStatus === status && styles.tabTextActive,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.postsContainer}>
+            {(() => {
+              const activeLabel = STATUS_TABS.find(
+                (tab) => tab.status === effectiveStatus
+              ).label;
+
+              const activePosts = posts.filter(
+                (post) =>
+                  post.status === effectiveStatus &&
+                  (isOwnProfile || post.status !== "cancelled")
+              );
+
+              if (activePosts.length === 0) {
+                return (
+                  <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>
+                      No {activeLabel.toLowerCase()} posts yet.
+                    </Text>
+                  </View>
+                );
+              }
+
+              return activePosts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  style={styles.postCardShadow}
+                  onPress={() => router.push(`/post/${post._id}`)}
+                />
+              ));
+            })()}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -220,6 +343,41 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#777",
     marginTop: 6,
+  },
+
+  viewTabRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    marginBottom: 16,
+  },
+
+  viewTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+
+  viewTabActive: {
+    borderBottomColor: "#7c3aed",
+  },
+
+  viewTabText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#999",
+  },
+
+  viewTabTextActive: {
+    color: "#7c3aed",
+  },
+
+  viewHeading: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 12,
   },
 
   tabRow: {

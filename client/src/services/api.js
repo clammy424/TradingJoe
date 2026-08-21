@@ -314,3 +314,21 @@ export const getUserPosts = async (userId) => {
 
   return data;
 };
+
+export const getEngagedPosts = async () => {
+  const token = await getToken();
+
+  const response = await fetch(`${API_URL}/api/posts/engaged`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to fetch engaged posts");
+  }
+
+  return data;
+};
