@@ -167,7 +167,11 @@ export default function PostDetail() {
       )}
       
       {Boolean(post.creatorId?.username) && (
-        <Text style={styles.username}>@{post.creatorId.username}</Text>
+        <Pressable
+          onPress={() => router.push(`/profile/${post.creatorId._id}`)}
+        >
+          <Text style={styles.username}>@{post.creatorId.username}</Text>
+        </Pressable>
       )}
 
       <Text style={styles.title}>{post.title}</Text>

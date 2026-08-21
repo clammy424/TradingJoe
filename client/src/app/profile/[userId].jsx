@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getUserProfile, getUserPosts } from "../../services/api";
+import { getCurrentUserId } from "../../services/auth";
 import PostCard from "../post/PostCard";
 
 const STATUS_TABS = [
@@ -21,6 +22,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeStatus, setActiveStatus] = useState("open");
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const isValidUserId = Boolean(userId) && userId !== "undefined" && userId !== "null";
 
@@ -33,6 +35,8 @@ export default function Profile() {
 
     try {
       setLoading(true);
+      const viewerId = await getCurrentUserId();
+      setCurrentUserId(viewerId);
       const data = await getUserProfile(userId);
       setProfile(data);
       const userPosts = await getUserPosts(userId);
@@ -75,6 +79,15 @@ export default function Profile() {
 
   const metaText = metaParts.join(" · ");
 
+  const isOwnProfile = Boolean(currentUserId) && String(currentUserId) === String(userId);
+
+  const visibleTabs = isOwnProfile
+    ? STATUS_TABS
+    : STATUS_TABS.filter((tab) => tab.status !== "cancelled");
+
+  const effectiveStatus =
+    isOwnProfile || activeStatus !== "cancelled" ? activeStatus : "open";
+
   return (
     <ScrollView
       style={styles.container}
@@ -97,16 +110,16 @@ export default function Profile() {
       <Text style={styles.postsHeading}>Posts</Text>
 
       <View style={styles.tabRow}>
-        {STATUS_TABS.map(({ status, label }) => (
+        {visibleTabs.map(({ status, label }) => (
           <Pressable
             key={status}
-            style={[styles.tab, activeStatus === status && styles.tabActive]}
+            style={[styles.tab, effectiveStatus === status && styles.tabActive]}
             onPress={() => setActiveStatus(status)}
           >
             <Text
               style={[
                 styles.tabText,
-                activeStatus === status && styles.tabTextActive,
+                effectiveStatus === status && styles.tabTextActive,
               ]}
             >
               {label}
@@ -117,11 +130,13 @@ export default function Profile() {
 
       {(() => {
         const activeLabel = STATUS_TABS.find(
-          (tab) => tab.status === activeStatus
+          (tab) => tab.status === effectiveStatus
         ).label;
 
         const activePosts = posts.filter(
-          (post) => post.status === activeStatus
+          (post) =>
+            post.status === effectiveStatus &&
+            (isOwnProfile || post.status !== "cancelled")
         );
 
         if (activePosts.length === 0) {
