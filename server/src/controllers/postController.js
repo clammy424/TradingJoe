@@ -2,6 +2,22 @@ const Post = require('../models/Post');
 const Response = require('../models/Response');
 const Barter = require('../models/Barter');
 
+// Returns an error message if the deadline is invalid or not in the future,
+// or null if it is a valid future deadline.
+const validateDeadline = (deadline) => {
+    const parsed = new Date(deadline);
+
+    if (isNaN(parsed.getTime())) {
+        return "Invalid deadline";
+    }
+
+    if (parsed <= new Date()) {
+        return "Deadline must be in the future";
+    }
+
+    return null;
+};
+
 
 // TODO: Create a new post
 const createPost = async (req, res) => {
@@ -32,7 +48,18 @@ const createPost = async (req, res) => {
                 message: "Missing required fields",
             });
         }
-        
+
+        // 3.5 Validate deadline, if provided
+        if (deadline) {
+            const deadlineError = validateDeadline(deadline);
+
+            if (deadlineError) {
+                return res.status(400).json({
+                    message: deadlineError,
+                });
+            }
+        }
+
         // 4. Create Post & Responses
         const post = await Post.create({
             creatorId: req.user.id,
@@ -417,6 +444,16 @@ const updatePost = async (req, res) => {
     }
 
     const { title, description, deadline, maxMatches, requests, offers } = req.body;
+
+    if (deadline !== undefined && deadline !== null && deadline !== "") {
+      const deadlineError = validateDeadline(deadline);
+
+      if (deadlineError) {
+        return res.status(400).json({
+          message: deadlineError
+        });
+      }
+    }
 
     if (maxMatches !== undefined) {
       const acceptedCount = await Barter.countDocuments({
