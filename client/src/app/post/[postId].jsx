@@ -4,6 +4,7 @@ import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 
 import { getPostById, createBarter, acceptBarter, rejectBarter, getMyBartersForPost } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
+import { Colors } from "../../constants/tokens";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -84,7 +85,7 @@ export default function PostDetail() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -170,7 +171,12 @@ export default function PostDetail() {
   };
 
   const renderResponseRow = (response) => (
-    <View key={response._id} style={styles.responseRow}>
+    <View key={response._id} style={styles.responseCard}>
+      {Boolean(response.category) && (
+        <Text style={styles.responseCategory}>
+          {response.category}
+        </Text>
+      )}
       <Text style={styles.value}>
         {response.description}
       </Text>
@@ -183,29 +189,31 @@ export default function PostDetail() {
       contentContainerStyle={styles.container}
     >
 
-      <Pressable
-        style={styles.backButton}
-        onPress={() => router.replace(backTarget)}
-      >
-        <Text style={styles.backButtonText}>
-          ← Back
-        </Text>
-      </Pressable>
-
-      {isCreator && (
+      <View style={styles.headerRow}>
         <Pressable
-              style={styles.viewBartersButton}
-              onPress={() =>
-                router.push(editHref)
-              }
-            >
-
-              <Text style={styles.viewBartersText}>
-                edit
-              </Text>
-
+          style={styles.backButton}
+          onPress={() => router.replace(backTarget)}
+        >
+          <Text style={styles.backButtonText}>
+            ← Back
+          </Text>
         </Pressable>
-      )}
+
+        {isCreator && (
+          <Pressable
+                style={styles.editButton}
+                onPress={() =>
+                  router.push(editHref)
+                }
+              >
+
+                <Text style={styles.viewBartersText}>
+                  edit
+                </Text>
+
+          </Pressable>
+        )}
+      </View>
 
       {Boolean(post.creatorId?.username) && (
         <Pressable
@@ -288,16 +296,18 @@ export default function PostDetail() {
         )}
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionHeader}>Requests</Text>
+      <View style={styles.columnsRow}>
+        <View style={[styles.section, styles.column]}>
+          <Text style={styles.sectionHeader}>Requests</Text>
 
-        {requests.map(renderResponseRow)}
-      </View>
+          {requests.map(renderResponseRow)}
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionHeader}>Offers</Text>
+        <View style={[styles.section, styles.column]}>
+          <Text style={styles.sectionHeader}>Offers</Text>
 
-        {offers.map(renderResponseRow)}
+          {offers.map(renderResponseRow)}
+        </View>
       </View>
 
       <Modal visible={isProposeModalVisible} transparent animationType="slide">
@@ -459,7 +469,7 @@ export default function PostDetail() {
               contentContainerStyle={styles.myBartersListContent}
             >
               {myBartersLoading && (
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Colors.primary} />
               )}
 
               {!myBartersLoading && myBartersError && (
@@ -524,32 +534,48 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 16,
+    backgroundColor: Colors.background,
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: Colors.background,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
 
   backButton: {
     alignSelf: "flex-start",
-    marginBottom: 12,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   backButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontSize: 13,
     fontWeight: "600",
   },
 
+  editButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: Colors.primary,
+  },
+
   username: {
     fontSize: 13,
-    color: "#7c3aed",
+    color: Colors.primary,
     fontWeight: "600",
     marginBottom: 4,
   },
@@ -558,24 +584,37 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
+    color: Colors.textPrimary,
   },
 
   description: {
     fontSize: 16,
     marginBottom: 20,
+    color: Colors.textBody,
   },
 
   section: {
     marginBottom: 12,
   },
 
+  columnsRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  column: {
+    flex: 1,
+  },
+
   label: {
     fontSize: 12,
     fontWeight: "bold",
+    color: Colors.textSecondary,
   },
 
   value: {
     fontSize: 14,
+    color: Colors.textBody,
   },
 
   sectionHeader: {
@@ -583,21 +622,46 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: Colors.border,
     paddingBottom: 6,
+    color: Colors.textPrimary,
   },
 
   responseRow: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  responseCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  responseCategory: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.textSecondary,
+    marginBottom: 4,
   },
 
   barterCount: {
     fontSize: 12,
-    color: "#777",
+    color: Colors.textSecondary,
     marginTop: 4,
   },
 
@@ -607,15 +671,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   viewBartersButtonDisabled: {
-    backgroundColor: "#c4b5e6",
+    backgroundColor: Colors.primaryLight,
   },
 
   viewBartersText: {
-    color: "#fff",
+    color: Colors.surface,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -628,7 +692,7 @@ const styles = StyleSheet.create({
   },
 
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 16,
   },
@@ -661,23 +725,24 @@ const styles = StyleSheet.create({
 
   modalInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 6,
     padding: 8,
     marginVertical: 12,
+    backgroundColor: Colors.surface,
   },
 
   statusAccepted: {
     marginTop: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: "#16a34a",
+    color: Colors.success,
   },
 
   statusRejected: {
     marginTop: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: "#dc2626",
+    color: Colors.error,
   },
 });

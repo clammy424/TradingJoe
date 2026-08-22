@@ -5,6 +5,7 @@ import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { getUserProfile, getUserPosts, getEngagedPosts } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
 import PostCard from "../post/PostCard";
+import { Colors } from "../../constants/tokens";
 
 const STATUS_TABS = [
   { status: "open", label: "Open" },
@@ -73,7 +74,7 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#7c3aed" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -108,6 +109,15 @@ export default function Profile() {
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
     >
+      <Pressable
+        style={styles.homeButton}
+        onPress={() => router.replace("/explore")}
+      >
+        <Text style={styles.homeButtonText}>
+          Home
+        </Text>
+      </Pressable>
+
       <View style={styles.header}>
         {Boolean(profile.username) && (
           <Text
@@ -133,6 +143,17 @@ export default function Profile() {
           <Text style={styles.meta}>{metaText}</Text>
         )}
       </View>
+
+      {isOwnProfile && (
+        <Pressable
+          style={styles.createPostButton}
+          onPress={() => router.push("/post/create-post")}
+        >
+          <Text style={styles.createPostButtonText}>
+            + Create Post
+          </Text>
+        </Pressable>
+      )}
 
       {isOwnProfile && (
         <View style={styles.viewTabRow}>
@@ -306,7 +327,7 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
   },
 
   listContent: {
@@ -319,40 +340,71 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
     padding: 24,
+  },
+
+  homeButton: {
+    alignSelf: "flex-end",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
+    marginBottom: 16,
+  },
+
+  homeButtonText: {
+    color: Colors.surface,
+    fontWeight: "600",
+    fontSize: 14,
   },
 
   header: {
     marginBottom: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: Colors.border,
+  },
+
+  createPostButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
+    marginBottom: 16,
+  },
+
+  createPostButtonText: {
+    color: Colors.surface,
+    fontWeight: "600",
+    fontSize: 14,
   },
 
   username: {
     fontSize: 24,
     fontWeight: "bold",
     letterSpacing: 0.2,
+    color: Colors.textPrimary,
   },
 
   name: {
     fontSize: 16,
-    color: "#333",
+    color: Colors.textBody,
     marginTop: 4,
   },
 
   meta: {
     fontSize: 13,
     fontStyle: "italic",
-    color: "#777",
+    color: Colors.textSecondary,
     marginTop: 6,
   },
 
   viewTabRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: Colors.border,
     marginBottom: 16,
   },
 
@@ -365,28 +417,29 @@ const styles = StyleSheet.create({
   },
 
   viewTabActive: {
-    borderBottomColor: "#7c3aed",
+    borderBottomColor: Colors.primary,
   },
 
   viewTabText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#999",
+    color: Colors.textSecondary,
   },
 
   viewTabTextActive: {
-    color: "#7c3aed",
+    color: Colors.primary,
   },
 
   viewHeading: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 12,
+    color: Colors.textPrimary,
   },
 
   tabRow: {
     flexDirection: "row",
-    backgroundColor: "#f2f2f2",
+    backgroundColor: Colors.primaryLight,
     borderRadius: 10,
     padding: 4,
     marginBottom: 20,
@@ -402,17 +455,17 @@ const styles = StyleSheet.create({
   },
 
   tabActive: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   tabText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#555",
+    color: Colors.textBody,
   },
 
   tabTextActive: {
-    color: "#fff",
+    color: Colors.surface,
   },
 
   postsContainer: {
@@ -434,13 +487,13 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    color: "#999",
+    color: Colors.textSecondary,
     textAlign: "center",
   },
 
   errorText: {
     fontSize: 14,
-    color: "#dc2626",
+    color: Colors.error,
     textAlign: "center",
   },
 });

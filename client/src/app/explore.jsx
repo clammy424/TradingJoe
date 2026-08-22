@@ -14,11 +14,12 @@ import {
 
 import { router, useFocusEffect } from "expo-router";
 
-import { getPosts } from "../services/api";
+import { getPosts, getUserProfile } from "../services/api";
 import { removeToken } from "../services/auth";
 import { getCurrentUserId } from "../services/auth";
 
 import PostCard from "./post/PostCard";
+import { Colors } from "../constants/tokens";
 
 
 export default function Explore() {
@@ -29,15 +30,29 @@ export default function Explore() {
 
   const [currentUserId, setCurrentUserId] = useState(null);
 
+  const [currentUserName, setCurrentUserName] = useState("");
+
   const [error, setError] = useState(null);
-  
+
     useFocusEffect(
     useCallback(() => {
       let isMounted = true;
 
-      getCurrentUserId().then((userId) => {
+      getCurrentUserId().then(async (userId) => {
         if (isMounted) {
           setCurrentUserId(userId);
+        }
+
+        if (userId) {
+          try {
+            const profile = await getUserProfile(userId);
+
+            if (isMounted) {
+              setCurrentUserName(profile.name || "");
+            }
+          } catch (error) {
+            console.error(error);
+          }
         }
       });
 
@@ -103,7 +118,7 @@ export default function Explore() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -128,7 +143,7 @@ export default function Explore() {
       <View style={styles.headerRow}>
 
         <Text style={styles.header}>
-          Welcome, Trader
+          Welcome, Trader{currentUserName ? ` ${currentUserName}` : ""}
         </Text>
 
 
@@ -230,6 +245,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: Colors.background,
   },
 
 
@@ -244,6 +260,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
+    color: Colors.textPrimary,
   },
 
 
@@ -258,12 +275,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: "#000",
+    backgroundColor: Colors.primary,
   },
 
 
   createButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "600",
   },
 
@@ -273,11 +290,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: Colors.border,
   },
 
 
   logoutButtonText: {
     fontWeight: "600",
+    color: Colors.textBody,
   },
 
 
@@ -295,6 +314,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: Colors.background,
   },
 
 

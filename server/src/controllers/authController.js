@@ -65,9 +65,23 @@ const signup = async (req, res) => {
       gradYear
     });
 
+    if (!process.env.JWT_SECRET) {
+        return res.status(500).json({
+            message: "JWT secret is not configured",
+        });
+    }
+
+    // 5. Issue auth token so the new user is logged in immediately
+    const token = jwt.sign(
+        { userID: user._id.toString() },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+
     // 6. Send response
     return res.status(201).json({
       message: "User created successfully",
+      token,
       user: {
         id: user._id,
         email: user.email,

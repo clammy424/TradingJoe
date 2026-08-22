@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet
 } from "react-native";
+import { Colors } from "../../constants/tokens";
 
 export default function PostCard({ post, onPress, style }) {
   return (
@@ -69,15 +70,20 @@ export default function PostCard({ post, onPress, style }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
 
   username: {
     fontSize: 13,
-    color: "#7c3aed",
+    color: Colors.primary,
     fontWeight: "600",
     marginBottom: 4,
   },
@@ -86,11 +92,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 8,
+    color: Colors.textPrimary,
   },
 
   description: {
     fontSize: 14,
     marginBottom: 16,
+    color: Colors.textBody,
   },
 
   section: {
@@ -100,5 +108,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "bold",
+    color: Colors.textSecondary,
   },
 });

@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 
 import { getMyBarters } from "../../services/api";
+import { Colors } from "../../constants/tokens";
 
 export default function MyBarters() {
   const [barters, setBarters] = useState([]);
@@ -32,7 +33,7 @@ export default function MyBarters() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -93,6 +94,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: Colors.background,
   },
 
   center: {
@@ -100,12 +102,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 50,
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
+    color: Colors.textPrimary,
   },
 
   listContent: {
@@ -114,7 +118,7 @@ const styles = StyleSheet.create({
 
   barterRow: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
@@ -124,11 +128,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 2,
+    color: Colors.textPrimary,
   },
 
   postOwner: {
     fontSize: 13,
-    color: "#7c3aed",
+    color: Colors.primary,
     fontWeight: "600",
     marginBottom: 6,
   },
@@ -136,11 +141,12 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 14,
     marginBottom: 6,
+    color: Colors.textBody,
   },
 
   status: {
     fontSize: 12,
-    color: "#777",
+    color: Colors.textSecondary,
     marginBottom: 8,
   },
 
@@ -149,11 +155,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   chatButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontSize: 13,
     fontWeight: "600",
   },

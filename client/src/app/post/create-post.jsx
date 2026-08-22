@@ -16,6 +16,7 @@ import { createPost, getPostById, updatePost, cancelPost, uncancelPost } from ".
 import { getToken } from "../../services/auth";
 
 import ResponseList from "./ResponseList";
+import { Colors } from "../../constants/tokens";
 
 const toLocalDateInputValue = (date) => {
   const pad = (n) => String(n).padStart(2, "0");
@@ -399,6 +400,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     gap: 10,
+    backgroundColor: Colors.background,
   },
 
   // responseContainer: {
@@ -410,6 +412,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
+    color: Colors.textPrimary,
   },
 
   backButton: {
@@ -417,11 +420,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   backButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -432,27 +435,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: "#fff"
+    backgroundColor: Colors.surface
     // outlineStyle: 'none'
   },
 
   error: {
-    color: "red",
+    color: Colors.error,
     fontSize: 12,
   },
 
   success: {
-    color: "green",
+    color: Colors.success,
     fontSize: 12,
   },
 
   helper: {
-    color: "#777",
+    color: Colors.textSecondary,
     fontSize: 12,
   },
 
   createButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -460,17 +463,17 @@ const styles = StyleSheet.create({
   },
 
   createButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: Colors.border,
   },
 
   createButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
     fontSize: 16,
   },
 
   cancelPostButton: {
-    backgroundColor: "#dc2626",
+    backgroundColor: Colors.error,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -478,13 +481,13 @@ const styles = StyleSheet.create({
   },
 
   cancelPostText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
     fontSize: 16,
   },
 
   uncancelPostButton: {
-    backgroundColor: "#16a34a",
+    backgroundColor: Colors.success,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -492,7 +495,7 @@ const styles = StyleSheet.create({
   },
 
   uncancelPostText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
     fontSize: 16,
   },

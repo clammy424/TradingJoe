@@ -10,6 +10,7 @@ import {
 import { router } from "expo-router";
 import { login } from "../../services/api";
 import { saveToken } from "../../services/auth";
+import { Colors } from "../../constants/tokens";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -93,39 +94,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     gap: 10,
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
+    color: Colors.textPrimary,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
   },
 
   error: {
-    color: "red",
+    color: Colors.error,
     fontSize: 12,
   },
 
   success: {
-    color: "green",
+    color: Colors.success,
     fontSize: 12,
   },
 
   helper: {
-    color: "#777",
+    color: Colors.textSecondary,
     fontSize: 12,
   },
 
   signupButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -133,11 +136,11 @@ const styles = StyleSheet.create({
   },
 
   signupButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: Colors.border,
   },
 
   signupButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
     fontSize: 16,
   },

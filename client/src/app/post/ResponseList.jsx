@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import ResponseRow from "./ResponseRow";
+import { Colors } from "../../constants/tokens";
 
 const MAX_RESPONSES = 5;
 
@@ -86,6 +87,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
+    color: Colors.textPrimary,
   },
 
   addButton: {
@@ -97,11 +99,12 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 15,
     fontWeight: "600",
+    color: Colors.primary,
   },
 
   counter: {
     marginTop: 4,
     fontSize: 12,
-    color: "#777",
+    color: Colors.textSecondary,
   },
 });

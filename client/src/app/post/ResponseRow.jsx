@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { RESPONSE_CATEGORIES } from "../../constants/ResponseCategories.js";
+import { Colors } from "../../constants/tokens";
 
 export default function ResponseRow({
   item,
@@ -75,10 +76,10 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
     fontSize: 14,
   },
 
@@ -86,9 +87,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 42,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
     paddingHorizontal: 8,
     fontSize: 14,
   },
@@ -102,6 +103,6 @@ const styles = StyleSheet.create({
 
   removeText: {
     fontSize: 24,
-    color: "#777",
+    color: Colors.textSecondary,
   },
 });

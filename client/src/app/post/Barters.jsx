@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 
 import { getPostById } from "../../services/api";
+import { Colors } from "../../constants/tokens";
 
 export default function Barters() {
   const { postId } = useLocalSearchParams();
@@ -33,7 +34,7 @@ export default function Barters() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -64,23 +65,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: Colors.background,
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
+    color: Colors.textPrimary,
   },
 
   barterRow: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
@@ -88,11 +92,12 @@ const styles = StyleSheet.create({
 
   message: {
     fontSize: 14,
+    color: Colors.textBody,
   },
 
   status: {
     fontSize: 12,
-    color: "#777",
+    color: Colors.textSecondary,
     marginTop: 4,
   },
 });

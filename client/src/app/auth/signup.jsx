@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { signup } from "../../services/api";
+import { saveToken } from "../../services/auth";
+import { Colors } from "../../constants/tokens";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -65,6 +67,12 @@ export default function Signup() {
       });
 
       console.log("Signup successful:", data);
+
+      if (!data.token) {
+        throw new Error("Signup response missing token");
+      }
+
+      await saveToken(data.token);
 
       router.replace("/explore");
     } catch (error) {
@@ -285,25 +293,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     gap: 10,
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
+    color: Colors.textPrimary,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.surface,
   },
 
   label: {
     fontWeight: "bold",
     marginTop: 5,
+    color: Colors.textPrimary,
   },
 
   roleContainer: {
@@ -316,42 +327,42 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 8,
     alignItems: "center",
   },
 
   selectedRoleButton: {
-    backgroundColor: "#7c3aed",
-    borderColor: "#7c3aed",
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
 
   roleText: {
-    color: "#000",
+    color: Colors.textPrimary,
   },
 
   selectedRoleText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
   },
 
   error: {
-    color: "red",
+    color: Colors.error,
     fontSize: 12,
   },
 
   success: {
-    color: "green",
+    color: Colors.success,
     fontSize: 12,
   },
 
   helper: {
-    color: "#777",
+    color: Colors.textSecondary,
     fontSize: 12,
   },
 
   signupButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -359,11 +370,11 @@ const styles = StyleSheet.create({
   },
 
   signupButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: Colors.border,
   },
 
   signupButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontWeight: "bold",
     fontSize: 16,
   },

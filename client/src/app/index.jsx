@@ -2,6 +2,7 @@ import { View, Text, Button, StyleSheet } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { getCurrentUserId } from "../services/auth";
+import { Colors } from "../constants/tokens";
 
 
 
@@ -51,11 +52,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 16,
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 20,
+    color: Colors.textPrimary,
   },
 });

@@ -14,6 +14,7 @@ import { useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getMessages, sendMessage } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
+import { Colors } from "../../constants/tokens";
 
 export default function Chat() {
   const { barterId } = useLocalSearchParams();
@@ -103,7 +104,7 @@ export default function Chat() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -178,12 +179,14 @@ export default function Chat() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: Colors.background,
   },
 
   messageList: {
@@ -204,12 +207,12 @@ const styles = StyleSheet.create({
 
   ownMessageRow: {
     alignSelf: "flex-end",
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   otherMessageRow: {
     alignSelf: "flex-start",
-    backgroundColor: "#eee",
+    backgroundColor: Colors.primaryLight,
   },
 
   messageText: {
@@ -217,15 +220,15 @@ const styles = StyleSheet.create({
   },
 
   ownMessageText: {
-    color: "#fff",
+    color: Colors.surface,
   },
 
   otherMessageText: {
-    color: "#000",
+    color: Colors.textPrimary,
   },
 
   inlineError: {
-    color: "#dc2626",
+    color: Colors.error,
     fontSize: 12,
     paddingHorizontal: 16,
     paddingBottom: 4,
@@ -236,33 +239,34 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: Colors.border,
   },
 
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
     marginRight: 8,
     maxHeight: 100,
+    backgroundColor: Colors.surface,
   },
 
   sendButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: "#7c3aed",
+    backgroundColor: Colors.primary,
   },
 
   sendButtonDisabled: {
-    backgroundColor: "#c4b5e6",
+    backgroundColor: Colors.primaryLight,
   },
 
   sendButtonText: {
-    color: "#fff",
+    color: Colors.surface,
     fontSize: 13,
     fontWeight: "600",
   },
