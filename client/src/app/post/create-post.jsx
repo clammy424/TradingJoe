@@ -17,6 +17,11 @@ import { getToken } from "../../services/auth";
 
 import ResponseList from "./ResponseList";
 
+const toLocalDateInputValue = (date) => {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
 export default function CreatePost() {
   const { postId } = useLocalSearchParams();
   const isEditMode = !!postId;
@@ -123,10 +128,14 @@ export default function CreatePost() {
     const combined = new Date(deadline);
     if (deadlineTime) {
       const [hours, minutes] = deadlineTime.split(":").map(Number);
-      combined.setHours(hours, minutes, 0, 0);
+      combined.setHours(hours, minutes, combined.getSeconds(), combined.getMilliseconds());
     }
     return combined;
   };
+
+  const combinedDeadline = combineDeadline();
+  const deadlineInPast =
+    combinedDeadline !== null && combinedDeadline.getTime() <= Date.now();
 
   const hasCompleteResponse = (items) => {
     return items.some(
@@ -152,6 +161,7 @@ export default function CreatePost() {
     title.trim() !== "" &&
     description.trim() !== "" &&
     (deadline === null || !isNaN(deadline.getTime())) &&
+    !deadlineInPast &&
     (maxMatches === "" || !isNaN(parseInt(maxMatches))) &&
     hasCompleteResponse(requests) &&
     hasCompleteResponse(offers) &&
@@ -164,8 +174,6 @@ export default function CreatePost() {
     }
     setError("");
     try {
-        const combinedDeadline = combineDeadline();
-
         if (isEditMode) {
             const data = await updatePost(postId, {
                 title,
@@ -228,8 +236,8 @@ export default function CreatePost() {
         {Platform.OS === "web" && (
           <input
             type="date"
-            value={deadline ? deadline.toISOString().split("T")[0] : ""}
-            min={new Date().toISOString().split("T")[0]}
+            value={deadline ? toLocalDateInputValue(deadline) : ""}
+            min={toLocalDateInputValue(new Date())}
             onChange={(e) => {
               setDeadline(
                 e.target.value ? new Date(`${e.target.value}T00:00:00`) : null
@@ -245,6 +253,11 @@ export default function CreatePost() {
             onChange={(e) => setDeadlineTime(e.target.value)}
             style={styles.input}
           />
+        )}
+        {deadlineInPast && (
+          <Text style={styles.error}>
+            Deadline must be in the future.
+          </Text>
         )}
         <TextInput
             style={styles.input}

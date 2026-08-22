@@ -1,7 +1,28 @@
 import { View, Text, Button, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+
+import { getCurrentUserId } from "../services/auth";
 
 export default function Index() {
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      getCurrentUserId().then((userId) => {
+        if (isMounted) {
+          setCurrentUserId(userId);
+        }
+      });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>TradingJoe</Text>
@@ -19,6 +40,13 @@ export default function Index() {
         title="Sign Up"
         onPress={() => router.push("/auth/signup")}
       />
+
+      {Boolean(currentUserId) && (
+        <Button
+          title="View Profile"
+          onPress={() => router.push(`/profile/${currentUserId}`)}
+        />
+      )}
     </View>
   );
 }

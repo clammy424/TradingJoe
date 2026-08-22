@@ -5,6 +5,29 @@ import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { getPostById, createBarter, acceptBarter, rejectBarter, getMyBartersForPost } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+const formatDeadline = (isoString) => {
+  if (!isoString) {
+    return "No deadline";
+  }
+
+  const date = new Date(isoString);
+  const weekday = WEEKDAYS[date.getDay()];
+  const month = MONTHS[date.getMonth()];
+  const day = date.getDate();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const hours24 = date.getHours();
+  const period = hours24 >= 12 ? "PM" : "AM";
+  const hours12 = hours24 % 12 || 12;
+
+  return `${weekday} ${month} ${day}, ${hours12}:${minutes} ${period}`;
+};
+
 export default function PostDetail() {
   const { postId } = useLocalSearchParams();
 
@@ -179,7 +202,7 @@ export default function PostDetail() {
 
       <View style={styles.section}>
         <Text style={styles.label}>DEADLINE</Text>
-        <Text style={styles.value}>{post.deadline}</Text>
+        <Text style={styles.value}>{formatDeadline(post.deadline)}</Text>
       </View>
 
       <View style={styles.section}>
