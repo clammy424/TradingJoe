@@ -29,7 +29,16 @@ const formatDeadline = (isoString) => {
 };
 
 export default function PostDetail() {
-  const { postId } = useLocalSearchParams();
+  const { postId, from, profileUserId } = useLocalSearchParams();
+
+  const backTarget =
+    from === "profile" && profileUserId
+      ? `/profile/${profileUserId}`
+      : "/explore";
+
+  const editHref = `/post/create-post?postId=${postId}${
+    from ? `&from=${from}` : ""
+  }${profileUserId ? `&profileUserId=${profileUserId}` : ""}`;
 
   const [post, setPost] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -174,11 +183,20 @@ export default function PostDetail() {
       contentContainerStyle={styles.container}
     >
 
+      <Pressable
+        style={styles.backButton}
+        onPress={() => router.replace(backTarget)}
+      >
+        <Text style={styles.backButtonText}>
+          ← Back
+        </Text>
+      </Pressable>
+
       {isCreator && (
         <Pressable
               style={styles.viewBartersButton}
               onPress={() =>
-                router.push(`/post/create-post?postId=${post._id}`)
+                router.push(editHref)
               }
             >
 
@@ -188,7 +206,7 @@ export default function PostDetail() {
 
         </Pressable>
       )}
-      
+
       {Boolean(post.creatorId?.username) && (
         <Pressable
           onPress={() => router.push(`/profile/${post.creatorId._id}`)}
@@ -512,6 +530,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  backButton: {
+    alignSelf: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: "#7c3aed",
+  },
+
+  backButtonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   username: {

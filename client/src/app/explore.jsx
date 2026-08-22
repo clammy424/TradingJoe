@@ -15,8 +15,8 @@ import {
 import { router, useFocusEffect } from "expo-router";
 
 import { getPosts } from "../services/api";
-// import { logout } from "../services/auth";
 import { removeToken } from "../services/auth";
+import { getCurrentUserId } from "../services/auth";
 
 import PostCard from "./post/PostCard";
 
@@ -27,8 +27,25 @@ export default function Explore() {
 
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
+  const [error, setError] = useState(null);
+  
+    useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      getCurrentUserId().then((userId) => {
+        if (isMounted) {
+          setCurrentUserId(userId);
+        }
+      });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [])
+  );
 
   const fetchPosts = useCallback(async () => {
 
@@ -131,6 +148,18 @@ export default function Explore() {
 
           </Pressable>
 
+          {Boolean(currentUserId) && (
+            <Pressable 
+              style={styles.createButton}
+              onPress={() => router.push(`/profile/${currentUserId}`)}>
+              
+              <Text style={styles.createButtonText}>
+                View Profile
+              </Text>
+              
+            </Pressable>
+          )}
+
           <Pressable
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -141,6 +170,7 @@ export default function Explore() {
             </Text>
 
           </Pressable>
+
 
 
         </View>
@@ -165,7 +195,7 @@ export default function Explore() {
             post={item}
 
             onPress={() =>
-              router.push(`/post/${item._id}`)
+              router.push(`/post/${item._id}?from=explore`)
             }
 
           />

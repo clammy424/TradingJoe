@@ -228,7 +228,9 @@ export default function Profile() {
                   key={post._id}
                   post={post}
                   style={styles.postCardShadow}
-                  onPress={() => router.push(`/post/${post._id}`)}
+                  onPress={() =>
+                    router.push(`/post/${post._id}?from=profile&profileUserId=${userId}`)
+                  }
                 />
               ));
             })()}
@@ -288,7 +290,9 @@ export default function Profile() {
                   key={post._id}
                   post={post}
                   style={styles.postCardShadow}
-                  onPress={() => router.push(`/post/${post._id}`)}
+                  onPress={() =>
+                    router.push(`/post/${post._id}?from=profile&profileUserId=${userId}`)
+                  }
                 />
               ));
             })()}

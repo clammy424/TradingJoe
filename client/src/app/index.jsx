@@ -1,8 +1,9 @@
 import { View, Text, Button, StyleSheet } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-
 import { getCurrentUserId } from "../services/auth";
+
+
 
 export default function Index() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -40,13 +41,6 @@ export default function Index() {
         title="Sign Up"
         onPress={() => router.push("/auth/signup")}
       />
-
-      {Boolean(currentUserId) && (
-        <Button
-          title="View Profile"
-          onPress={() => router.push(`/profile/${currentUserId}`)}
-        />
-      )}
     </View>
   );
 }

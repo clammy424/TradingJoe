@@ -23,8 +23,17 @@ const toLocalDateInputValue = (date) => {
 };
 
 export default function CreatePost() {
-  const { postId } = useLocalSearchParams();
+  const { postId, from, profileUserId } = useLocalSearchParams();
   const isEditMode = !!postId;
+
+  const backTarget =
+    from === "profile" && profileUserId
+      ? `/profile/${profileUserId}`
+      : "/explore";
+
+  const postDetailQuery = `${from ? `?from=${from}` : ""}${
+    profileUserId ? `${from ? "&" : "?"}profileUserId=${profileUserId}` : ""
+  }`;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -49,6 +58,7 @@ export default function CreatePost() {
   const [postStatus, setPostStatus] = useState(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isUncancelling, setIsUncancelling] = useState(false);
+  const [acceptedMatchCount, setAcceptedMatchCount] = useState(0);
 
   const prefillFromExistingPost = async () => {
     try {
@@ -71,6 +81,9 @@ export default function CreatePost() {
         data.post.maxMatches != null ? String(data.post.maxMatches) : 1
       );
       setPostStatus(data.post.status || null);
+      setAcceptedMatchCount(
+        (data.barters || []).filter((barter) => barter.status === "accepted").length
+      );
 
       if (data.requests && data.requests.length > 0) {
         setRequests(data.requests);
@@ -134,8 +147,11 @@ export default function CreatePost() {
   };
 
   const combinedDeadline = combineDeadline();
+  const deadlineInvalid = combinedDeadline !== null && isNaN(combinedDeadline.getTime());
   const deadlineInPast =
-    combinedDeadline !== null && combinedDeadline.getTime() <= Date.now();
+    combinedDeadline !== null &&
+    !deadlineInvalid &&
+    combinedDeadline.getTime() <= Date.now();
 
   const hasCompleteResponse = (items) => {
     return items.some(
@@ -157,19 +173,52 @@ export default function CreatePost() {
       offer.category !== ""
   );
 
+  const effectiveMaxMatches = maxMatches.trim() === "" ? 1 : Number(maxMatches);
+  const maxMatchesInvalid =
+    maxMatches.trim() !== "" &&
+    (!Number.isInteger(effectiveMaxMatches) || effectiveMaxMatches < 1);
+  const maxMatchesBelowAccepted =
+    isEditMode && !maxMatchesInvalid && effectiveMaxMatches < acceptedMatchCount;
+  const postCancelled = isEditMode && postStatus === "cancelled";
+
+  const validationErrors = [];
+
+  if (deadlineInvalid) {
+    validationErrors.push("Invalid deadline.");
+  } else if (deadlineInPast) {
+    validationErrors.push("Deadline must be in the future.");
+  }
+
+  if (maxMatchesInvalid) {
+    validationErrors.push("Max matches must be a whole number of 1 or more.");
+  } else if (maxMatchesBelowAccepted) {
+    validationErrors.push(
+      `Max matches cannot be lower than the current number of accepted barters (${acceptedMatchCount}).`
+    );
+  }
+
+  if (postCancelled) {
+    validationErrors.push("This post is cancelled and cannot be edited.");
+  }
+
   const formValid =
     title.trim() !== "" &&
     description.trim() !== "" &&
-    (deadline === null || !isNaN(deadline.getTime())) &&
+    !deadlineInvalid &&
     !deadlineInPast &&
-    (maxMatches === "" || !isNaN(parseInt(maxMatches))) &&
+    !maxMatchesInvalid &&
+    !maxMatchesBelowAccepted &&
+    !postCancelled &&
     hasCompleteResponse(requests) &&
     hasCompleteResponse(offers) &&
     allRequestsComplete &&
     allOffersComplete;
-    
+
   const handleCreatePost = async () => {
     if (!formValid) {
+      setError(
+        validationErrors[0] || "Please fill out all required fields correctly."
+      );
       return;
     }
     setError("");
@@ -184,7 +233,7 @@ export default function CreatePost() {
                 offers: offers
             });
             console.log("Update Post Response:", data);
-            router.replace(`/post/${data.post._id}`);
+            router.replace(`/post/${data.post._id}${postDetailQuery}`);
             return;
         }
 
@@ -219,6 +268,15 @@ export default function CreatePost() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
+        <Pressable
+          style={styles.backButton}
+          onPress={() => router.replace(backTarget)}
+        >
+          <Text style={styles.backButtonText}>
+            ← Back
+          </Text>
+        </Pressable>
+
         <Text style={styles.title}>Create Post</Text>
         {Boolean(error) && <Text style={styles.error}>{error}</Text>}
         <TextInput
@@ -254,7 +312,12 @@ export default function CreatePost() {
             style={styles.input}
           />
         )}
-        {deadlineInPast && (
+        {deadlineInvalid && (
+          <Text style={styles.error}>
+            Invalid deadline.
+          </Text>
+        )}
+        {!deadlineInvalid && deadlineInPast && (
           <Text style={styles.error}>
             Deadline must be in the future.
           </Text>
@@ -266,6 +329,16 @@ export default function CreatePost() {
             onChangeText={setMaxMatches}
             keyboardType="numeric"
         />
+        {maxMatchesInvalid && (
+          <Text style={styles.error}>
+            Max matches must be a whole number of 1 or more.
+          </Text>
+        )}
+        {!maxMatchesInvalid && maxMatchesBelowAccepted && (
+          <Text style={styles.error}>
+            Max matches cannot be lower than the current number of accepted barters ({acceptedMatchCount}).
+          </Text>
+        )}
         <View>
           <ResponseList
           title="requesting"
@@ -278,6 +351,11 @@ export default function CreatePost() {
             setItems={setOffers}
           />
         </View>
+        {postCancelled && (
+          <Text style={styles.error}>
+            This post is cancelled and cannot be edited.
+          </Text>
+        )}
         <Button
             title="Create Post"
             onPress={ handleCreatePost }
@@ -332,6 +410,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+
+  backButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: "#7c3aed",
+  },
+
+  backButtonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   input: {
