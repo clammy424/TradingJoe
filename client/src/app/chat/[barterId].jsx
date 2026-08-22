@@ -10,14 +10,14 @@ import {
   Platform,
 } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocalSearchParams, useFocusEffect } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getMessages, sendMessage } from "../../services/api";
 import { getCurrentUserId } from "../../services/auth";
 import { Colors } from "../../constants/tokens";
 
 export default function Chat() {
-  const { barterId } = useLocalSearchParams();
+  const { barterId, username } = useLocalSearchParams();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,6 +123,23 @@ export default function Chat() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
+      <View style={styles.headerRow}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>
+            ← Back
+          </Text>
+        </Pressable>
+
+        {Boolean(username) && (
+          <Text style={styles.headerUsername}>
+            @{username}
+          </Text>
+        )}
+      </View>
+
       <ScrollView
         style={styles.messageList}
         contentContainerStyle={styles.messageListContent}
@@ -187,6 +204,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.background,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+
+  backButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: Colors.primary,
+  },
+
+  backButtonText: {
+    color: Colors.surface,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  headerUsername: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: Colors.primary,
   },
 
   messageList: {

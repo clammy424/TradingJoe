@@ -32,7 +32,7 @@ export default function Signup() {
   const validPassword = password.length >= 8;
 
   const validGradYear =
-    role !== "undergrad" && role !== "grad"
+    role !== "Undergrad" && role !== "Grad"
       ? true
       : gradYear.trim() !== "";
 
@@ -61,7 +61,7 @@ export default function Signup() {
         username,
         role,
         gradYear:
-          role === "undergrad" || role === "grad"
+          role === "Undergrad" || role === "Grad" || role === "Alumni"
             ? gradYear
             : undefined,
       });
@@ -173,14 +173,14 @@ export default function Signup() {
         <Pressable
           style={[
             styles.roleButton,
-            role === "undergrad" && styles.selectedRoleButton,
+            role === "Undergrad" && styles.selectedRoleButton,
           ]}
-          onPress={() => setRole("undergrad")}
+          onPress={() => setRole("Undergrad")}
         >
           <Text
             style={[
               styles.roleText,
-              role === "undergrad" && styles.selectedRoleText,
+              role === "Undergrad" && styles.selectedRoleText,
             ]}
           >
             Undergrad
@@ -190,14 +190,14 @@ export default function Signup() {
         <Pressable
           style={[
             styles.roleButton,
-            role === "grad" && styles.selectedRoleButton,
+            role === "Grad" && styles.selectedRoleButton,
           ]}
-          onPress={() => setRole("grad")}
+          onPress={() => setRole("Grad")}
         >
           <Text
             style={[
               styles.roleText,
-              role === "grad" && styles.selectedRoleText,
+              role === "Grad" && styles.selectedRoleText,
             ]}
           >
             Graduate
@@ -207,14 +207,31 @@ export default function Signup() {
         <Pressable
           style={[
             styles.roleButton,
-            role === "professor" && styles.selectedRoleButton,
+            role === "Alumni" && styles.selectedRoleButton,
           ]}
-          onPress={() => setRole("professor")}
+          onPress={() => setRole("Alumni")}
         >
           <Text
             style={[
               styles.roleText,
-              role === "professor" && styles.selectedRoleText,
+              role === "Alumni" && styles.selectedRoleText,
+            ]}
+          >
+            Alumni
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[
+            styles.roleButton,
+            role === "Professor" && styles.selectedRoleButton,
+          ]}
+          onPress={() => setRole("Professor")}
+        >
+          <Text
+            style={[
+              styles.roleText,
+              role === "Professor" && styles.selectedRoleText,
             ]}
           >
             Professor
@@ -224,14 +241,14 @@ export default function Signup() {
         <Pressable
           style={[
             styles.roleButton,
-            role === "staff" && styles.selectedRoleButton,
+            role === "Staff" && styles.selectedRoleButton,
           ]}
-          onPress={() => setRole("staff")}
+          onPress={() => setRole("Staff")}
         >
           <Text
             style={[
               styles.roleText,
-              role === "staff" && styles.selectedRoleText,
+              role === "Staff" && styles.selectedRoleText,
             ]}
           >
             Staff
@@ -240,7 +257,7 @@ export default function Signup() {
       </View>
 
       {/* GRADUATION YEAR */}
-      {Boolean(role === "undergrad" || role === "grad") && (
+      {Boolean(role === "Undergrad" || role === "Grad") && (
         <>
           <TextInput
             style={styles.input}

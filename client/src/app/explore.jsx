@@ -15,7 +15,7 @@ import {
 import { router, useFocusEffect } from "expo-router";
 
 import { getPosts, getUserProfile } from "../services/api";
-import { removeToken } from "../services/auth";
+import { removeToken, getToken } from "../services/auth";
 import { getCurrentUserId } from "../services/auth";
 
 import PostCard from "./post/PostCard";
@@ -63,6 +63,14 @@ export default function Explore() {
   );
 
   const fetchPosts = useCallback(async () => {
+
+    const token = await getToken();
+
+    if (!token) {
+      // Not authenticated (e.g. just logged out) — nothing to fetch.
+      setLoading(false);
+      return;
+    }
 
     try {
 

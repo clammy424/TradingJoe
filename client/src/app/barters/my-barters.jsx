@@ -72,7 +72,13 @@ export default function MyBarters() {
             {Boolean(item._id) && (
               <Pressable
                 style={styles.chatButton}
-                onPress={() => router.push(`/chat/${item._id}`)}
+                onPress={() =>
+                  router.push(
+                    `/chat/${item._id}?username=${encodeURIComponent(
+                      item.postId?.creatorId?.username || ""
+                    )}`
+                  )
+                }
               >
                 <Text style={styles.chatButtonText}>Chat</Text>
               </Pressable>

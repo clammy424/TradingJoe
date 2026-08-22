@@ -6,6 +6,11 @@ import { getPostById, createBarter, acceptBarter, rejectBarter, getMyBartersForP
 import { getCurrentUserId } from "../../services/auth";
 import { Colors } from "../../constants/tokens";
 
+// Muted accept/reject action colors, kept separate from the semantic
+// success/error tokens so they don't affect other success/error UI.
+const BARTER_ACCEPT_COLOR = "#5E9C7A";
+const BARTER_REJECT_COLOR = "#B96B73";
+
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -226,31 +231,33 @@ export default function PostDetail() {
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.description}>{post.description}</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>DEADLINE</Text>
-        <Text style={styles.value}>{formatDeadline(post.deadline)}</Text>
+      <View style={styles.statsGrid}>
+        <View style={styles.statsGridRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.label}>DEADLINE</Text>
+            <Text style={styles.value}>{formatDeadline(post.deadline)}</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <Text style={styles.label}>STATUS</Text>
+            <Text style={styles.value}>{post.status}</Text>
+          </View>
+        </View>
+
+        <View style={styles.statsGridRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.label}>MATCHES</Text>
+            <Text style={styles.value}>{acceptedCount} / {post.maxMatches}</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <Text style={styles.label}>BARTERS</Text>
+            <Text style={styles.value}>{acceptedCount} accepted</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>MAX MATCHES</Text>
-        <Text style={styles.value}>{post.maxMatches}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>STATUS</Text>
-        <Text style={styles.value}>{post.status}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>MATCHES</Text>
-        <Text style={styles.value}>{acceptedCount} / {post.maxMatches}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>BARTERS</Text>
-        
-        
-
         {isCreator && (
           <>
             <Text style={styles.barterCount}>
@@ -266,17 +273,15 @@ export default function PostDetail() {
               </Text>
             </Pressable>
           </>
-          
+
         )}
 
         {!isCreator && (
-          <>
-            <Text style={styles.barterCount}>
-            {acceptedCount} accepted
-            </Text>
+          <View style={styles.barterButtonsRow}>
             <Pressable
               style={[
                 styles.viewBartersButton,
+                styles.barterButton,
                 post.status === "closed" && styles.viewBartersButtonDisabled,
               ]}
               onPress={openProposeModal}
@@ -286,13 +291,15 @@ export default function PostDetail() {
             </Pressable>
 
             <Pressable
-              style={styles.viewBartersButton}
+              style={[
+                styles.viewBartersButton,
+                styles.barterButton,
+              ]}
               onPress={openMyBartersModal}
             >
-              <Text style={styles.viewBartersText}>View My Barters</Text>
+              <Text style={styles.viewBartersText}>View Sent Barters</Text>
             </Pressable>
-          </>
-
+          </View>
         )}
       </View>
 
@@ -342,7 +349,7 @@ export default function PostDetail() {
       <Modal visible={isBartersModalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, styles.bartersModalContent]}>
-            <Text style={styles.sectionHeader}>Barters</Text>
+            <Text style={styles.sectionHeader}>BARTERS</Text>
 
             <ScrollView
               style={styles.bartersList}
@@ -361,11 +368,27 @@ export default function PostDetail() {
                 (barter) => barter.status === "rejected"
               );
 
-              const renderBarterRow = (barter, statusContent) => {
+              const renderBarterRow = (barter, statusContent, leadingActions) => {
                 const isParticipant =
                   isCreator ||
                   String(barter.creatorId?._id || barter.creatorId) ===
                     String(currentUserId);
+
+                const chatButton = isParticipant && (
+                  <Pressable
+                    style={styles.actionButton}
+                    onPress={() => {
+                      router.push(
+                        `/chat/${barter._id}?username=${encodeURIComponent(
+                          barter.creatorId?.username || ""
+                        )}`
+                      );
+                      setIsBartersModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.viewBartersText}>Chat</Text>
+                  </Pressable>
+                );
 
                 return (
                   <View key={barter._id} style={styles.responseRow}>
@@ -378,16 +401,11 @@ export default function PostDetail() {
 
                     {statusContent}
 
-                    {isParticipant && (
-                      <Pressable
-                        style={styles.viewBartersButton}
-                        onPress={() => {
-                          router.push(`/chat/${barter._id}`);
-                          setIsBartersModalVisible(false);
-                        }}
-                      >
-                        <Text style={styles.viewBartersText}>Chat</Text>
-                      </Pressable>
+                    {Boolean(leadingActions || chatButton) && (
+                      <View style={styles.barterActionsRow}>
+                        {leadingActions}
+                        {chatButton}
+                      </View>
                     )}
                   </View>
                 );
@@ -395,55 +413,58 @@ export default function PostDetail() {
 
               return (
                 <>
-                  {pendingBarters.length > 0 && (
-                    <View style={styles.section}>
-                      <Text style={styles.label}>PENDING</Text>
-                      {pendingBarters.map((barter) =>
+                  <View style={styles.section}>
+                    <Text style={styles.barterSectionHeading}>PENDING</Text>
+                    <View style={styles.barterSectionDivider} />
+
+                    {pendingBarters.length > 0 ? (
+                      pendingBarters.map((barter) =>
                         renderBarterRow(
                           barter,
+                          null,
                           <>
                             <Pressable
-                              style={styles.viewBartersButton}
+                              style={[styles.actionButton, styles.acceptButton]}
                               onPress={() => handleAcceptBarter(barter._id)}
                             >
                               <Text style={styles.viewBartersText}>Accept</Text>
                             </Pressable>
 
                             <Pressable
-                              style={styles.viewBartersButton}
+                              style={[styles.actionButton, styles.rejectButton]}
                               onPress={() => handleRejectBarter(barter._id)}
                             >
                               <Text style={styles.viewBartersText}>Reject</Text>
                             </Pressable>
                           </>
                         )
-                      )}
-                    </View>
-                  )}
+                      )
+                    ) : (
+                      <Text style={styles.barterEmptyText}>No pending barters</Text>
+                    )}
+                  </View>
 
-                  {acceptedBarters.length > 0 && (
-                    <View style={styles.section}>
-                      <Text style={styles.label}>ACCEPTED</Text>
-                      {acceptedBarters.map((barter) =>
-                        renderBarterRow(
-                          barter,
-                          <Text style={styles.statusAccepted}>Accepted</Text>
-                        )
-                      )}
-                    </View>
-                  )}
+                  <View style={styles.section}>
+                    <Text style={styles.barterSectionHeading}>ACCEPTED</Text>
+                    <View style={styles.barterSectionDivider} />
 
-                  {rejectedBarters.length > 0 && (
-                    <View style={styles.section}>
-                      <Text style={styles.label}>REJECTED</Text>
-                      {rejectedBarters.map((barter) =>
-                        renderBarterRow(
-                          barter,
-                          <Text style={styles.statusRejected}>Rejected</Text>
-                        )
-                      )}
-                    </View>
-                  )}
+                    {acceptedBarters.length > 0 ? (
+                      acceptedBarters.map((barter) => renderBarterRow(barter))
+                    ) : (
+                      <Text style={styles.barterEmptyText}>No accepted barters</Text>
+                    )}
+                  </View>
+
+                  <View style={styles.section}>
+                    <Text style={styles.barterSectionHeading}>REJECTED</Text>
+                    <View style={styles.barterSectionDivider} />
+
+                    {rejectedBarters.length > 0 ? (
+                      rejectedBarters.map((barter) => renderBarterRow(barter))
+                    ) : (
+                      <Text style={styles.barterEmptyText}>No rejected barters</Text>
+                    )}
+                  </View>
                 </>
               );
             })()}
@@ -484,25 +505,29 @@ export default function PostDetail() {
 
               {!myBartersLoading && !myBartersError && myBarters.map((barter) => (
                 <View key={barter._id} style={styles.responseRow}>
-                  <Text style={styles.value}>{barter.message}</Text>
-
                   {barter.status === "accepted" && (
-                    <Text style={styles.statusAccepted}>Accepted</Text>
+                    <Text style={styles.statusAccepted}>STATUS: Accepted</Text>
                   )}
 
                   {barter.status === "rejected" && (
-                    <Text style={styles.statusRejected}>Rejected</Text>
+                    <Text style={styles.statusRejected}>STATUS: Rejected</Text>
                   )}
 
                   {barter.status === "pending" && (
-                    <Text style={styles.barterCount}>Pending</Text>
+                    <Text style={styles.statusPending}>STATUS: Pending</Text>
                   )}
+
+                  <Text style={styles.value}>{barter.message}</Text>
 
                   {barter.status !== "rejected" && (
                     <Pressable
                       style={styles.viewBartersButton}
                       onPress={() => {
-                        router.push(`/chat/${barter._id}`);
+                        router.push(
+                          `/chat/${barter._id}?username=${encodeURIComponent(
+                            post.creatorId?.username || ""
+                          )}`
+                        );
                         setIsMyBartersModalVisible(false);
                       }}
                     >
@@ -597,6 +622,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  statsGrid: {
+    rowGap: 12,
+    marginBottom: 16,
+  },
+
+  statsGridRow: {
+    flexDirection: "row",
+    columnGap: 20,
+  },
+
+  statItem: {
+    flex: 1,
+  },
+
+  barterButtonsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  barterButton: {
+    // flex: 1,
+  },
+
   columnsRow: {
     flexDirection: "row",
     gap: 12,
@@ -684,6 +732,50 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  barterSectionHeading: {
+    fontSize: 14,
+    fontWeight: "bold",
+    letterSpacing: 0.4,
+    marginBottom: 6,
+    color: Colors.textBody,
+  },
+
+  barterSectionDivider: {
+    height: 1,
+    marginBottom: 10,
+    backgroundColor: Colors.border,
+  },
+
+  barterEmptyText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontStyle: "italic",
+    marginBottom: 8,
+  },
+
+  barterActionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+  },
+
+  actionButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: Colors.primary,
+  },
+
+  acceptButton: {
+    backgroundColor: BARTER_ACCEPT_COLOR,
+  },
+
+  rejectButton: {
+    backgroundColor: BARTER_REJECT_COLOR,
+  },
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -733,16 +825,23 @@ const styles = StyleSheet.create({
   },
 
   statusAccepted: {
-    marginTop: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.success,
+    color: BARTER_ACCEPT_COLOR,
+    marginBottom: 4,
   },
 
   statusRejected: {
-    marginTop: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.error,
+    color: BARTER_REJECT_COLOR,
+    marginBottom: 4,
+  },
+
+  statusPending: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.textBody,
+    marginBottom: 4,
   },
 });

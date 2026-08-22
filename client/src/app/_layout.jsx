@@ -110,6 +110,7 @@ export default function TabLayout() {
       <Stack.Screen name="post/[postId]" options={{ headerShown: false }} />
       <Stack.Screen name="post/create-post" options={{ headerShown: false }} />
       <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[barterId]" options={{ headerShown: false }} />
     </Stack>
   );
 }

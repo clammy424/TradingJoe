@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getUserProfile, getUserPosts, getEngagedPosts } from "../../services/api";
-import { getCurrentUserId } from "../../services/auth";
+import { getCurrentUserId, removeToken } from "../../services/auth";
 import PostCard from "../post/PostCard";
 import { Colors } from "../../constants/tokens";
 
@@ -71,6 +71,15 @@ export default function Profile() {
     }, [loadProfile])
   );
 
+  const handleLogout = async () => {
+    try {
+      await removeToken();
+      router.replace("/auth/login");
+    } catch (error) {
+      console.error("LOGOUT ERROR:", error);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -109,16 +118,7 @@ export default function Profile() {
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
     >
-      <Pressable
-        style={styles.homeButton}
-        onPress={() => router.replace("/explore")}
-      >
-        <Text style={styles.homeButtonText}>
-          Home
-        </Text>
-      </Pressable>
-
-      <View style={styles.header}>
+      <View style={styles.topRow}>
         {Boolean(profile.username) && (
           <Text
             style={styles.username}
@@ -129,6 +129,39 @@ export default function Profile() {
           </Text>
         )}
 
+        <View style={styles.topRowButtons}>
+          {isOwnProfile && (
+            <Pressable
+              style={styles.createPostButton}
+              onPress={() => router.push("/post/create-post")}
+            >
+              <Text style={styles.createPostButtonText}>
+                + Create Post
+              </Text>
+            </Pressable>
+          )}
+
+          <Pressable
+            style={styles.homeButton}
+            onPress={() => router.replace("/explore")}
+          >
+            <Text style={styles.homeButtonText}>
+              Home
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>
+              Logout
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.header}>
         {Boolean(profile.name) && (
           <Text
             style={styles.name}
@@ -143,17 +176,6 @@ export default function Profile() {
           <Text style={styles.meta}>{metaText}</Text>
         )}
       </View>
-
-      {isOwnProfile && (
-        <Pressable
-          style={styles.createPostButton}
-          onPress={() => router.push("/post/create-post")}
-        >
-          <Text style={styles.createPostButtonText}>
-            + Create Post
-          </Text>
-        </Pressable>
-      )}
 
       {isOwnProfile && (
         <View style={styles.viewTabRow}>
@@ -344,17 +366,43 @@ const styles = StyleSheet.create({
     padding: 24,
   },
 
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+
+  topRowButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
   homeButton: {
-    alignSelf: "flex-end",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: Colors.primary,
-    marginBottom: 16,
   },
 
   homeButtonText: {
     color: Colors.surface,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  logoutButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+
+  logoutButtonText: {
+    color: Colors.textBody,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -367,12 +415,10 @@ const styles = StyleSheet.create({
   },
 
   createPostButton: {
-    alignSelf: "flex-start",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: Colors.primary,
-    marginBottom: 16,
   },
 
   createPostButtonText: {
@@ -382,6 +428,7 @@ const styles = StyleSheet.create({
   },
 
   username: {
+    flexShrink: 1,
     fontSize: 24,
     fontWeight: "bold",
     letterSpacing: 0.2,
