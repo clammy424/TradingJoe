@@ -455,8 +455,10 @@ const updatePost = async (req, res) => {
       }
     }
 
+    let acceptedCount;
+
     if (maxMatches !== undefined) {
-      const acceptedCount = await Barter.countDocuments({
+      acceptedCount = await Barter.countDocuments({
         postId: post._id,
         status: "accepted"
       });
@@ -472,6 +474,16 @@ const updatePost = async (req, res) => {
     if (description !== undefined) post.description = description;
     if (deadline !== undefined) post.deadline = deadline;
     if (maxMatches !== undefined) post.maxMatches = maxMatches;
+
+    if (maxMatches !== undefined && post.status === "closed") {
+      const deadlinePassed = post.deadline && post.deadline < new Date();
+
+      if (acceptedCount < post.maxMatches && !deadlinePassed) {
+        post.status = "open";
+      }
+    } else if (maxMatches !== undefined && post.status === "open" && acceptedCount === post.maxMatches) {
+      post.status = "closed";
+    }
 
     if (requests !== undefined) {
       await syncResponses(postId, req.user.id, "request", requests);

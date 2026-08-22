@@ -45,6 +45,10 @@ const createBarter = async (req, res) => {
       status: "pending"
     });
 
+    console.log(
+      `[TEMP DEBUG] Barter created: id=${barter._id} db=${Barter.db.name} collection=${Barter.collection.name}`
+    );
+
     return res.status(201).json({
       message: "Barter created successfully",
       barter
@@ -142,28 +146,14 @@ const rejectBarter = async (req, res) => {
       });
     }
 
-    if (barter.status === "rejected") {
+    if (barter.status !== "pending") {
       return res.status(400).json({
-        message: "Barter is already rejected"
+        message: "Only pending barters can be rejected"
       });
     }
-
-    const wasAccepted = barter.status === "accepted";
 
     barter.status = "rejected";
     await barter.save();
-
-    if (wasAccepted) {
-      const acceptedCount = await Barter.countDocuments({
-        postId: post._id,
-        status: "accepted"
-      });
-
-      if (post.status === "closed" && acceptedCount < (post.maxMatches ?? 1)) {
-        post.status = "open";
-        await post.save();
-      }
-    }
 
     return res.status(200).json({
       message: "Barter rejected successfully",

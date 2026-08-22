@@ -142,6 +142,44 @@ export const updatePost = async (postId, postData) => {
   return data;
 };
 
+export const cancelPost = async (postId) => {
+  const token = await getToken();
+
+  const response = await fetch(`${API_URL}/api/posts/${postId}/cancel`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to cancel post");
+  }
+
+  return data;
+};
+
+export const uncancelPost = async (postId) => {
+  const token = await getToken();
+
+  const response = await fetch(`${API_URL}/api/posts/${postId}/uncancel`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to uncancel post");
+  }
+
+  return data;
+};
+
 export const createBarter = async (postId, message) => {
   const token = await getToken();
 

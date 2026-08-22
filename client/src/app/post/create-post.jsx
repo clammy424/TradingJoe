@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router, useLocalSearchParams } from "expo-router";
-import { createPost, getPostById, updatePost } from "../../services/api";
+import { createPost, getPostById, updatePost, cancelPost, uncancelPost } from "../../services/api";
 import { getToken } from "../../services/auth";
 
 import ResponseList from "./ResponseList";
@@ -40,38 +40,70 @@ export default function CreatePost() {
     },
   ]);
   const [error, setError] = useState("");
+  const [postStatus, setPostStatus] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isUncancelling, setIsUncancelling] = useState(false);
+
+  const prefillFromExistingPost = async () => {
+    try {
+      const data = await getPostById(postId);
+
+      setTitle(data.post.title || "");
+      setDescription(data.post.description || "");
+      setDeadline(data.post.deadline ? new Date(data.post.deadline) : null);
+      setMaxMatches(
+        data.post.maxMatches != null ? String(data.post.maxMatches) : 1
+      );
+      setPostStatus(data.post.status || null);
+
+      if (data.requests && data.requests.length > 0) {
+        setRequests(data.requests);
+      }
+
+      if (data.offers && data.offers.length > 0) {
+        setOffers(data.offers);
+      }
+    } catch (error) {
+      setError(error.message);
+      console.error("Prefill edit post failed:", error);
+    }
+  };
 
   useEffect(() => {
     if (!isEditMode) {
       return;
     }
 
-    const prefillFromExistingPost = async () => {
-      try {
-        const data = await getPostById(postId);
-
-        setTitle(data.post.title || "");
-        setDescription(data.post.description || "");
-        setDeadline(data.post.deadline ? new Date(data.post.deadline) : null);
-        setMaxMatches(
-          data.post.maxMatches != null ? String(data.post.maxMatches) : 1
-        );
-
-        if (data.requests && data.requests.length > 0) {
-          setRequests(data.requests);
-        }
-
-        if (data.offers && data.offers.length > 0) {
-          setOffers(data.offers);
-        }
-      } catch (error) {
-        setError(error.message);
-        console.error("Prefill edit post failed:", error);
-      }
-    };
-
     prefillFromExistingPost();
   }, [isEditMode, postId]);
+
+  const handleCancelPost = async () => {
+    setError("");
+    setIsCancelling(true);
+    try {
+      await cancelPost(postId);
+      await prefillFromExistingPost();
+    } catch (error) {
+      setError(error.message);
+      console.error("Cancel post failed:", error);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleUncancelPost = async () => {
+    setError("");
+    setIsUncancelling(true);
+    try {
+      await uncancelPost(postId);
+      await prefillFromExistingPost();
+    } catch (error) {
+      setError(error.message);
+      console.error("Uncancel post failed:", error);
+    } finally {
+      setIsUncancelling(false);
+    }
+  };
 
   const hasCompleteResponse = (items) => {
     return items.some(
@@ -107,6 +139,7 @@ export default function CreatePost() {
     if (!formValid) {
       return;
     }
+    setError("");
     try {
         if (isEditMode) {
             const data = await updatePost(postId, {
@@ -154,6 +187,7 @@ export default function CreatePost() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.title}>Create Post</Text>
+        {Boolean(error) && <Text style={styles.error}>{error}</Text>}
         <TextInput
             style={styles.input}
             placeholder="Title"
@@ -203,7 +237,28 @@ export default function CreatePost() {
             onPress={ handleCreatePost }
             disabled={!formValid}
         />
-        {/* TODO: ADD ERROR DISPLAY MESSAGES */}
+        {isEditMode && postStatus === "open" && (
+          <Pressable
+            style={styles.cancelPostButton}
+            onPress={handleCancelPost}
+            disabled={isCancelling}
+          >
+            <Text style={styles.cancelPostText}>
+              {isCancelling ? "Cancelling..." : "Cancel Post"}
+            </Text>
+          </Pressable>
+        )}
+        {isEditMode && postStatus === "cancelled" && (
+          <Pressable
+            style={styles.uncancelPostButton}
+            onPress={handleUncancelPost}
+            disabled={isUncancelling}
+          >
+            <Text style={styles.uncancelPostText}>
+              {isUncancelling ? "Uncancelling..." : "Uncancel Post"}
+            </Text>
+          </Pressable>
+        )}
         {/* TODO: ADD OTHER FIELDS FOR POST */}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -271,6 +326,34 @@ const styles = StyleSheet.create({
   },
 
   createButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  cancelPostButton: {
+    backgroundColor: "#dc2626",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  cancelPostText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  uncancelPostButton: {
+    backgroundColor: "#16a34a",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  uncancelPostText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
