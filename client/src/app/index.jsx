@@ -1,30 +1,8 @@
 import { View, Text, Button, StyleSheet } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { getCurrentUserId } from "../services/auth";
+import { router } from "expo-router";
 import { Colors } from "../constants/tokens";
 
-
-
 export default function Index() {
-  const [currentUserId, setCurrentUserId] = useState(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      let isMounted = true;
-
-      getCurrentUserId().then((userId) => {
-        if (isMounted) {
-          setCurrentUserId(userId);
-        }
-      });
-
-      return () => {
-        isMounted = false;
-      };
-    }, [])
-  );
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>TradingJoe</Text>

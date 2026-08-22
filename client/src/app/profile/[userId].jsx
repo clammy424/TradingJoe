@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import { getUserProfile, getUserPosts, getEngagedPosts } from "../../services/api";
-import { getCurrentUserId, removeToken } from "../../services/auth";
+import { getCurrentUserId } from "../../services/auth";
+import { useAuth } from "../../context/AuthContext";
 import PostCard from "../post/PostCard";
 import { Colors } from "../../constants/tokens";
 
@@ -19,6 +20,7 @@ const ENGAGED_STATUS_TABS = [
 ];
 
 export default function Profile() {
+  const { logout } = useAuth();
   const { userId } = useLocalSearchParams();
 
   console.log("[Profile] received userId param:", userId);
@@ -73,7 +75,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      await removeToken();
+      await logout();
       router.replace("/auth/login");
     } catch (error) {
       console.error("LOGOUT ERROR:", error);

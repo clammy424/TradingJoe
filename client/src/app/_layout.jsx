@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { router, usePathname, useSegments } from "expo-router";
 import { Stack } from "expo-router/stack";
@@ -9,7 +9,7 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
 } from "@expo-google-fonts/plus-jakarta-sans";
-import { getToken } from "../services/auth";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import { Colors, Spacing, Radius, FontFamily } from "../constants/tokens";
 
 function HomeButton() {
@@ -31,9 +31,8 @@ function HomeButton() {
 
 // SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [token, setToken] = useState(null);
+function RootLayoutNav() {
+  const { isAuthenticated, isCheckingAuth } = useAuth();
   const pathname = usePathname();
   const segments = useSegments();
   const firstSegment = segments[0];
@@ -45,45 +44,41 @@ export default function TabLayout() {
     PlusJakartaSans_700Bold,
   });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkAuth = async () => {
-      const storedToken = await getToken();
-
-      if (!isMounted) {
-        return;
-      }
-
-      setToken(storedToken);
-      setIsCheckingAuth(false);
-    };
-
-    checkAuth();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [pathname, firstSegment]);
+  // "/auth/*" is the only public route. The root ("/") is never rendered as
+  // a destination in its own right — it always forwards to whichever of
+  // "/explore" or "/auth/login" matches the current auth state.
+  const isAuthRoute = firstSegment === "auth";
+  const isRootRoute = firstSegment === undefined;
+  const isPublicRoute = isAuthRoute;
 
   useEffect(() => {
     if (isCheckingAuth) {
       return;
     }
 
-    const isAuthRoute = firstSegment === "auth";
-    const isPublicRoute = isAuthRoute;
-
-    if (!token && !isPublicRoute) {
-      router.replace("/auth/login");
+    if (isRootRoute) {
+      router.replace(isAuthenticated ? "/explore" : "/auth/login");
+      return;
     }
 
-    if (token && isAuthRoute) {
+    if (!isAuthenticated && !isPublicRoute) {
+      router.replace("/auth/login");
+      return;
+    }
+
+    if (isAuthenticated && isAuthRoute) {
       router.replace("/explore");
     }
-  }, [isCheckingAuth, token, pathname, firstSegment]);
+  }, [isCheckingAuth, isAuthenticated, isAuthRoute, isRootRoute, isPublicRoute, pathname]);
 
-  if (!fontsLoaded) {
+  // While auth status is unknown, or once we know the current route is about
+  // to be redirected away from (root, or a protected route with no token),
+  // never mount the destination screen — show the loading state instead so
+  // nothing behind the guard is ever visible, even for a frame.
+  const isBlocked =
+    !isCheckingAuth && (isRootRoute || (!isAuthenticated && !isPublicRoute));
+
+  if (!fontsLoaded || isCheckingAuth || isBlocked) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -91,7 +86,7 @@ export default function TabLayout() {
     );
   }
 
-  const showHomeButton = Boolean(token) && firstSegment !== "auth";
+  const showHomeButton = isAuthenticated && firstSegment !== "auth";
 
   return (
     <Stack
@@ -112,6 +107,14 @@ export default function TabLayout() {
       <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
       <Stack.Screen name="chat/[barterId]" options={{ headerShown: false }} />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
   );
 }
 

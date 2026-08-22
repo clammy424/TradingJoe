@@ -15,14 +15,16 @@ import {
 import { router, useFocusEffect } from "expo-router";
 
 import { getPosts, getUserProfile } from "../services/api";
-import { removeToken, getToken } from "../services/auth";
 import { getCurrentUserId } from "../services/auth";
+import { useAuth } from "../context/AuthContext";
 
 import PostCard from "./post/PostCard";
 import { Colors } from "../constants/tokens";
 
 
 export default function Explore() {
+
+  const { logout } = useAuth();
 
   const [posts, setPosts] = useState([]);
 
@@ -64,14 +66,6 @@ export default function Explore() {
 
   const fetchPosts = useCallback(async () => {
 
-    const token = await getToken();
-
-    if (!token) {
-      // Not authenticated (e.g. just logged out) — nothing to fetch.
-      setLoading(false);
-      return;
-    }
-
     try {
 
       setLoading(true);
@@ -99,7 +93,7 @@ export default function Explore() {
 
     try {
 
-      await removeToken();
+      await logout();
 
       router.replace("/auth/login");
 

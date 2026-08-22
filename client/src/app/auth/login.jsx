@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { login } from "../../services/api";
-import { saveToken } from "../../services/auth";
+import { useAuth } from "../../context/AuthContext";
 import { Colors } from "../../constants/tokens";
 
 export default function Login() {
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,10 +40,10 @@ export default function Login() {
           throw new Error("Login response missing token");
         }
 
-        await saveToken(data.token);
-  
+        await authLogin(data.token);
+
         console.log("Login successful:", data);
-  
+
         router.replace("/explore");
         
       } catch (error) {
