@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const Barter = require('../models/Barter');
+const { closeIfExpired } = require('../utils/postExpiration');
 
 const createBarter = async (req, res) => {
   try {
@@ -17,6 +18,12 @@ const createBarter = async (req, res) => {
     if (!post) {
       return res.status(404).json({
         message: "Post not found"
+      });
+    }
+
+    if (await closeIfExpired(post)) {
+      return res.status(400).json({
+        message: "Post has expired and can no longer accept barters"
       });
     }
 

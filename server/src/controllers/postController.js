@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const Response = require('../models/Response');
 const Barter = require('../models/Barter');
+const { closeIfExpired } = require('../utils/postExpiration');
 
 // Returns an error message if the deadline is invalid or not in the future,
 // or null if it is a valid future deadline.
@@ -106,12 +107,19 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find({
+    const openPosts = await Post.find({
       status: "open"
     })
       .populate("creatorId", "username")
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
+
+    for (const post of openPosts) {
+      await closeIfExpired(post);
+    }
+
+    const posts = openPosts
+      .filter((post) => post.status === "open")
+      .map((post) => post.toObject());
 
     const postIds = posts.map((post) => post._id);
 
@@ -176,12 +184,17 @@ const getPostsByUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const posts = await Post.find({
+    const foundPosts = await Post.find({
       creatorId: userId
     })
       .populate("creatorId", "username")
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
+
+    for (const post of foundPosts) {
+      await closeIfExpired(post);
+    }
+
+    const posts = foundPosts.map((post) => post.toObject());
 
     const postIds = posts.map((post) => post._id);
 
@@ -254,13 +267,18 @@ const getEngagedPosts = async (req, res) => {
       creatorId: req.user.id
     });
 
-    const posts = await Post.find({
+    const foundPosts = await Post.find({
       _id: { $in: engagedPostIds },
       status: { $in: ["open", "closed"] }
     })
       .populate("creatorId", "username")
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
+
+    for (const post of foundPosts) {
+      await closeIfExpired(post);
+    }
+
+    const posts = foundPosts.map((post) => post.toObject());
 
     const postIds = posts.map((post) => post._id);
 
@@ -338,6 +356,8 @@ const getPostById = async (req, res) => {
         message: "Post not found"
       });
     }
+
+    await closeIfExpired(post);
 
     const responses = await Response.find({ postId });
 

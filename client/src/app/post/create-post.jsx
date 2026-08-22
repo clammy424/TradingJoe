@@ -24,6 +24,7 @@ export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState(null);
+  const [deadlineTime, setDeadlineTime] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [maxMatches, setMaxMatches] = useState("");
   const [requests, setRequests] = useState([
@@ -50,7 +51,17 @@ export default function CreatePost() {
 
       setTitle(data.post.title || "");
       setDescription(data.post.description || "");
-      setDeadline(data.post.deadline ? new Date(data.post.deadline) : null);
+      const existingDeadline = data.post.deadline
+        ? new Date(data.post.deadline)
+        : null;
+      setDeadline(existingDeadline);
+      setDeadlineTime(
+        existingDeadline
+          ? `${String(existingDeadline.getHours()).padStart(2, "0")}:${String(
+              existingDeadline.getMinutes()
+            ).padStart(2, "0")}`
+          : ""
+      );
       setMaxMatches(
         data.post.maxMatches != null ? String(data.post.maxMatches) : 1
       );
@@ -105,6 +116,18 @@ export default function CreatePost() {
     }
   };
 
+  const combineDeadline = () => {
+    if (!deadline) {
+      return null;
+    }
+    const combined = new Date(deadline);
+    if (deadlineTime) {
+      const [hours, minutes] = deadlineTime.split(":").map(Number);
+      combined.setHours(hours, minutes, 0, 0);
+    }
+    return combined;
+  };
+
   const hasCompleteResponse = (items) => {
     return items.some(
       (item) =>
@@ -141,11 +164,13 @@ export default function CreatePost() {
     }
     setError("");
     try {
+        const combinedDeadline = combineDeadline();
+
         if (isEditMode) {
             const data = await updatePost(postId, {
                 title,
                 description,
-                deadline: deadline ? new Date(deadline) : null,
+                deadline: combinedDeadline ? combinedDeadline.toISOString() : null,
                 maxMatches: maxMatches ? parseInt(maxMatches) : 1,
                 requests: requests,
                 offers: offers
@@ -162,7 +187,7 @@ export default function CreatePost() {
         const data = await createPost({
             title,
             description,
-            deadline: deadline ? deadline.toISOString() : null,
+            deadline: combinedDeadline ? combinedDeadline.toISOString() : null,
             maxMatches: maxMatches ? parseInt(maxMatches) : 1,
             requests: requests,
             offers: offers
@@ -210,6 +235,14 @@ export default function CreatePost() {
                 e.target.value ? new Date(`${e.target.value}T00:00:00`) : null
               );
             }}
+            style={styles.input}
+          />
+        )}
+        {Platform.OS === "web" && (
+          <input
+            type="time"
+            value={deadlineTime}
+            onChange={(e) => setDeadlineTime(e.target.value)}
             style={styles.input}
           />
         )}
