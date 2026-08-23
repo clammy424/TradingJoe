@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/auth/login",
+      "destination": "/auth/login.html"
+    },
+    {
+      "source": "/auth/signup",
+      "destination": "/auth/signup.html"
+    },
+    {
+      "source": "/explore",
+      "destination": "/explore.html"
+    }
+  ]
+}
