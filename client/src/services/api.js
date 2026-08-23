@@ -1,6 +1,6 @@
 
-const API_URL = "http://10.18.17.77:5000";
-// const API_URL = "http://192.168.1.182:5000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 import { getToken } from "./auth";
 
 export const healthCheck = async () => {
